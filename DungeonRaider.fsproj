@@ -1,0 +1,47 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="GameCore.fs" />
+    <Compile Include="Model.fs" />
+    <Compile Include="View.fs" />
+    <Compile Include="Controller.fs" />
+    <Compile Include="Program.fs" />
+  </ItemGroup>
+
+  <!-- Stuff outside the content pipeline - loaded directly -->
+  <ItemGroup>
+    <None Include="Content\Sprites\dungeon.png" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="Content\Sprites\cleric.png" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="Content\Sprites\goblin.png" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="Content\Sprites\minotaur.png" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="Content\Sprites\orc.png" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="Content\Sprites\ranger.png" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="Content\Sprites\rat-bat.png" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="Content\Sprites\rogue.png" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="Content\Sprites\skeleton.png" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="Content\Sprites\slime.png" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="Content\Sprites\snake.png" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="Content\Sprites\warrior.png" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="Content\Sprites\wizard.png" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+    
+  <!-- Processed by content pipeline on build into xnb files -->
+  <ItemGroup>
+    <None Include="Content\Content.mgcb" />
+    <None Include="Content\coders_crux.ttf" />
+    <None Include="Content\coders_crux.spritefont" />
+    <MonoGameContentReference Include="**\*.mgcb" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <PackageReference Include="MonoGame.Content.Builder" Version="3.7.0.4" />
+    <PackageReference Include="MonoGame.Framework.DesktopGL.Core" Version="3.7.0.7" />
+    <PackageReference Include="System.Drawing.Common" Version="4.5.0" />
+  </ItemGroup>
+
+</Project>
