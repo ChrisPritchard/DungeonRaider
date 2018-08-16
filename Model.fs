@@ -1,4 +1,6 @@
 module Model
 
+type Tile = Tile of x:int * y:int * wall:bool
+
 type GameModel = 
-    | Title
+    | MapView of Tile list
