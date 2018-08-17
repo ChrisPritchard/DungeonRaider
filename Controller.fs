@@ -2,6 +2,7 @@ module Controller
 
 open GameCore
 open Model
+open Bsp
 open View
 open Microsoft.Xna.Framework.Input
 
@@ -17,5 +18,5 @@ let advanceGame (runState : RunState) worldState =
     match worldState with
     | _ when runState.WasJustPressed Keys.Escape -> None
     | None -> 
-        getMap 20 |> MapView |> Some
+        dungeon 20 |> MapView |> Some
     | other -> other
