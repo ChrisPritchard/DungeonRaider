@@ -12,7 +12,7 @@ let assetsToLoad = [
     Texture ("white", "./Content/white.png")
 ]
 
-let (tx, ty) = 20, 20
+let (tx, ty) = 10, 10
 let wallColour = new Color(50,50,50)
 let openColour = Color.White
 

@@ -2,46 +2,63 @@ module Bsp
 
 open Model
 
+type Range = Range of x:int * y:int * width:int * height:int
+type BspResult = 
+    | Leaf of Range
+    | Partition of BspResult * BspResult
+
+let inRange (ox, oy) (Range (x, y, width, height)) =
+    ox >= x && oy >= y && ox <= x + width && oy <= y + height
+
 let random = new System.Random()
-let minDivide = 5
-let minRoomSize = 3
 
-let range = 
-    let maxInt = System.Int32.MaxValue
-    List.fold (fun (mix, miy, mox, moy) (x,y) -> 
-        (min mix x, min miy y, max mox x, max moy y)) 
-        (maxInt, maxInt, 0, 0)
+let rec bsp minLeafSize (Range (x, y, width, height)) = 
+    let minPartitionSize = minLeafSize * 2
+    let recBsp = Range >> bsp minLeafSize
 
-let rec bspDivide minSize list = 
-    let minRange = minSize * 2
-    let minx, miny, maxx, maxy = range list
-    let cantx, canty = maxx - minx < minRange, maxy - miny < minRange
-    if cantx && canty then 
-        [list]
+    let splitOnX () = 
+        let wiggleRoom = width - minPartitionSize
+        let mid = random.Next(minLeafSize, minLeafSize + wiggleRoom + 1)
+        Partition (recBsp (x, y, mid, height), recBsp (x + mid, y, width - mid, height))
+    let splitOnY () =
+        let wiggleRoom = height - minPartitionSize
+        let mid = random.Next(minLeafSize, minLeafSize + wiggleRoom + 1)
+        Partition (recBsp (x, y, width, mid), recBsp (x, y + mid, width, height - mid))
+
+    if width <= minPartitionSize && height <= minPartitionSize then 
+        Leaf (Range (x, y, width, height))
+    else if width <= minPartitionSize then
+        splitOnY ()
+    else if height <= minPartitionSize then
+        splitOnX ()
     else
-        let xdivide () =
-            let mid = random.Next(minx + minSize, maxx - minSize)
-            fun (x,_) -> x > mid
-        let ydivide () =
-            let mid = random.Next(miny + minSize, maxy - minSize)
-            fun (_,y) -> y > mid
-        let divider = 
-            if cantx then ydivide ()
-            else if canty then xdivide ()
-            else match random.Next(2) with 0 -> xdivide () | _ -> ydivide ()
-        let left, right = List.partition divider list
-        List.concat [bspDivide minSize left; bspDivide minSize right]
+        match random.NextDouble() with
+        | n when n >= 0.5 ->
+            splitOnX ()
+        | _ ->
+            splitOnY ()
 
-let insertRoom list = 
-    let (x, y, w, h) = range list
-    let (mw, mh) = w - x, h - y
-    let (rw, rh) =  random.Next(minRoomSize, mw - 1), 
-                    random.Next(minRoomSize, mh - 1)
-    list |> List.map (fun (ox, oy) -> Tile (ox, oy, not (ox <= x + rw && oy <= y + rh)))
+let roomIn (Range (x, y, width, height)) minRoomSize =
+    let roomWidth = random.Next(minRoomSize, width - 2)
+    let roomHeight = random.Next(minRoomSize, height - 2)
+    let roomX = x + random.Next(1, width - roomWidth - 2)
+    let roomY = y + random.Next(1, height - roomHeight - 2)
+    Range (roomX, roomY, roomWidth, roomHeight)
 
-let dungeon dim = 
-    [0..dim-1] |> List.collect (fun x -> 
-        [0..dim-1] |> List.map (fun y -> 
-            x, y))
-            |> bspDivide minDivide
-            |> List.collect insertRoom
+let rec asRooms minRoomSize bspResult = 
+    seq {
+        match bspResult with
+        | Leaf range -> yield roomIn range minRoomSize
+        | Partition (bspRes1, bspRes2) -> 
+            yield! asRooms minRoomSize bspRes1
+            yield! asRooms minRoomSize bspRes2
+    } |> Seq.toList
+
+let dungeon maxSize minLeafSize minRoomSize = 
+    let rooms = 
+        bsp minLeafSize (Range (0, 0, maxSize, maxSize))
+        |> asRooms minRoomSize
+    [0..maxSize - 1] |> List.collect (fun x -> 
+    [0..maxSize - 1] |> List.map (fun y -> 
+        Tile (x, y, List.exists (inRange (x, y)) rooms |> not)))
+    
