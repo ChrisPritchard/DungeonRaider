@@ -11,5 +11,5 @@ let advanceGame (runState : RunState) worldState =
     match worldState with
     | _ when runState.WasJustPressed Keys.Escape -> None
     | None -> 
-        dungeon 50 8 3 |> MapView |> Some
+        dungeon 50 10 8 |> MapView |> Some
     | other -> other

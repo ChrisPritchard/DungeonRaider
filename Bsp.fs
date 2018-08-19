@@ -8,7 +8,7 @@ type BspResult =
     | Partition of BspResult * BspResult
 
 let inRange (ox, oy) (Range (x, y, width, height)) =
-    ox >= x && oy >= y && ox <= x + width && oy <= y + height
+    ox >= x && oy >= y && ox < x + width && oy < y + height
 
 let centre (Range (x, y, width, height)) = 
     (x + (width / 2)), (y + (height / 2))
@@ -42,10 +42,10 @@ let rec bsp minLeafSize (Range (x, y, width, height)) =
             splitOnY ()
 
 let roomIn (Range (x, y, width, height)) minRoomSize =
-    let roomWidth = random.Next(minRoomSize, width - 2)
-    let roomHeight = random.Next(minRoomSize, height - 2)
-    let roomX = x + random.Next(1, width - roomWidth - 2)
-    let roomY = y + random.Next(1, height - roomHeight - 2)
+    let roomWidth = random.Next(minRoomSize, width - 1)
+    let roomHeight = random.Next(minRoomSize, height - 1)
+    let roomX = x + random.Next(1, width - roomWidth - 1)
+    let roomY = y + random.Next(1, height - roomHeight - 1)
     Range (roomX, roomY, roomWidth, roomHeight)
 
 let rec asRooms minRoomSize bspResult = 
