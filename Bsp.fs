@@ -10,6 +10,9 @@ type BspResult =
 let inRange (ox, oy) (Range (x, y, width, height)) =
     ox >= x && oy >= y && ox <= x + width && oy <= y + height
 
+let centre (Range (x, y, width, height)) = 
+    (x + (width / 2)), (y + (height / 2))
+
 let random = new System.Random()
 
 let rec bsp minLeafSize (Range (x, y, width, height)) = 
@@ -54,11 +57,46 @@ let rec asRooms minRoomSize bspResult =
             yield! asRooms minRoomSize bspRes2
     } |> Seq.toList
 
+let rec totalRange =
+    function
+    | Leaf range -> range
+    | Partition (bspRes1, bspRes2) ->
+        let (Range (x1, y1, width1, height1)) = totalRange bspRes1
+        let (Range (x2, y2, width2, height2)) = totalRange bspRes2
+        let x = min x1 x2
+        let y = min y1 y2
+        let width = if x1 = x2 then width1 else width1 + width2
+        let height = if y1 = y2 then height1 else height1 + height2
+        Range (x, y, width, height)
+
+let corridorBetween bspResult1 bspResult2 =
+    let (x1, y1) = totalRange bspResult1 |> centre
+    let (x2, y2) = totalRange bspResult2 |> centre
+    if x1 = x2 then
+        if y1 < y2 then Range (x1, y1, 1, y2 - y1)
+        else Range (x1, y2, 1, y1 - y2)
+    else
+        if x1 < x2 then Range (x1, y1, x2 - x1, 1)
+        else Range (x2, y1, x1 - x2, 1)
+
+let rec asCorridors bspResult = 
+    seq {
+        match bspResult with
+        | Leaf _ -> ()
+        | Partition (bspRes1, bspRes2) ->
+            yield corridorBetween bspRes1 bspRes2
+            yield! asCorridors bspRes1
+            yield! asCorridors bspRes2
+    } |> Seq.toList
+
 let dungeon maxSize minLeafSize minRoomSize = 
-    let rooms = 
-        bsp minLeafSize (Range (0, 0, maxSize, maxSize))
-        |> asRooms minRoomSize
+    let partitions = bsp minLeafSize (Range (0, 0, maxSize, maxSize))
+    let rooms = partitions |> asRooms minRoomSize
+    let corridors = partitions |> asCorridors
     [0..maxSize - 1] |> List.collect (fun x -> 
     [0..maxSize - 1] |> List.map (fun y -> 
-        Tile (x, y, List.exists (inRange (x, y)) rooms |> not)))
+        let isWall = 
+            List.exists (inRange (x, y)) rooms |> not
+            && List.exists (inRange (x, y)) corridors |> not
+        Tile (x, y, isWall)))
     
