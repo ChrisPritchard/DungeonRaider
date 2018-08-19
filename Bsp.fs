@@ -48,6 +48,25 @@ let rec asRooms minRoomSize bspResult =
     | Partition (bspRes1, bspRes2) -> 
         Partition (asRooms minRoomSize bspRes1, asRooms minRoomSize bspRes2)
 
+let corridorBetween (Range (x1, y1, w1, h1)) (Range (x2, y2, w2, h2)) =
+    if x1 + w1 < x2 then
+        // horizontal link
+        let y = ((max y1 y2) + (min (y1 + h1) (y2 + h2))) / 2
+        Range (x1 + w1, y, x2 - (x1 + w1), 1)
+    else
+        let x = ((max x1 x2) + (min (x1 + w1) (x2 + w2))) / 2
+        Range (x, y1 + h1, 1, y2 - (y1 + h1))
+
+let rec asCorridors bspResult =
+    seq {
+        match bspResult with
+        | Partition (Leaf room1, Leaf room2) -> yield corridorBetween room1 room2
+        | Leaf _ -> ()
+        | Partition (bspRes1, bspRes2) -> 
+            yield! asCorridors bspRes1
+            yield! asCorridors bspRes2
+    } |> Seq.toList
+
 let rec flattenRanges bspResult = 
     seq {
         match bspResult with
@@ -63,9 +82,9 @@ let inRange (ox, oy) (Range (x, y, width, height)) =
 let dungeon maxSize minLeafSize minRoomSize = 
     let partitions = bsp minLeafSize (Range (0, 0, maxSize, maxSize))
     let rooms = asRooms minRoomSize partitions
-    //let corridors = corridorsFor rooms
-
-    let allOpen = flattenRanges rooms
+    
+    let corridors = asCorridors rooms
+    let allOpen = List.concat [flattenRanges rooms; corridors]
 
     [0..maxSize - 1] |> List.collect (fun x -> 
     [0..maxSize - 1] |> List.map (fun y -> 
