@@ -2,6 +2,19 @@ module Bsp
 
 open Model
 
+// what do i want to do here?
+// 1. divide into a tree
+// 2. join each parition
+// - joining involves:
+// a. determining type (horizontal or vertical) - this can be derived
+// b. finding all ranges in each branch
+// c. starting from the middle, find a corridor between that will connect two ranges without breaking rules
+// cb. or, i could get the centre of each room, find the closest to the middle...this seems silly
+// so how do I do this find algorithm?
+// i. get the closest to the edge (maybe just sort)
+// ii. run iterate out from the centre (both dirs) until the shortest corridor is found that links and follows rules
+// might require a test to ensure no intersection
+
 type Range = Range of x:int * y:int * width:int * height:int
 type BspResult = 
     | Leaf of Range
