@@ -20,12 +20,6 @@ type BspResult =
     | Leaf of Range
     | Partition of BspResult * BspResult
 
-let inRange (ox, oy) (Range (x, y, width, height)) =
-    ox >= x && oy >= y && ox < x + width && oy < y + height
-
-let centre (Range (x, y, width, height)) = 
-    (x + (width / 2)), (y + (height / 2))
-
 let random = new System.Random()
 
 let rec bsp minLeafSize (Range (x, y, width, height)) = 
@@ -62,54 +56,50 @@ let roomIn (Range (x, y, width, height)) minRoomSize =
     Range (roomX, roomY, roomWidth, roomHeight)
 
 let rec asRooms minRoomSize bspResult = 
-    seq {
-        match bspResult with
-        | Leaf range -> yield roomIn range minRoomSize
-        | Partition (bspRes1, bspRes2) -> 
-            yield! asRooms minRoomSize bspRes1
-            yield! asRooms minRoomSize bspRes2
-    } |> Seq.toList
+    match bspResult with
+    | Leaf range -> Leaf <| roomIn range minRoomSize
+    | Partition (bspRes1, bspRes2) -> 
+        Partition (asRooms minRoomSize bspRes1, asRooms minRoomSize bspRes2)
 
-let rec totalRange =
-    function
-    | Leaf range -> range
-    | Partition (bspRes1, bspRes2) ->
-        let (Range (x1, y1, width1, height1)) = totalRange bspRes1
-        let (Range (x2, y2, width2, height2)) = totalRange bspRes2
-        let x = min x1 x2
-        let y = min y1 y2
-        let width = if x1 = x2 then width1 else width1 + width2
-        let height = if y1 = y2 then height1 else height1 + height2
-        Range (x, y, width, height)
-
-let corridorBetween bspResult1 bspResult2 =
-    let (x1, y1) = totalRange bspResult1 |> centre
-    let (x2, y2) = totalRange bspResult2 |> centre
-    if x1 = x2 then
-        if y1 < y2 then Range (x1, y1, 1, y2 - y1)
-        else Range (x1, y2, 1, y1 - y2)
+let corridorBetween (Range (x1, y1, w1, h1)) (Range (x2, y2, w2, h2)) =
+    if x1 + w1 < x2 then
+        // horizontal link
+        let y = ((max y1 y2) + (min (y1 + h1) (y2 + h2))) / 2
+        Range (x1 + w1, y, x2 - (x1 + w1), 1)
     else
-        if x1 < x2 then Range (x1, y1, x2 - x1, 1)
-        else Range (x2, y1, x1 - x2, 1)
+        let x = ((max x1 x2) + (min (x1 + w1) (x2 + w2))) / 2
+        Range (x, y1 + h1, 1, y2 - (y1 + h1))
 
-let rec asCorridors bspResult = 
+let rec corridorsFor bspResult =
     seq {
         match bspResult with
+        | Partition (Leaf room1, Leaf room2) -> 
+            yield corridorBetween room1 room2
         | Leaf _ -> ()
-        | Partition (bspRes1, bspRes2) ->
-            yield corridorBetween bspRes1 bspRes2
-            yield! asCorridors bspRes1
-            yield! asCorridors bspRes2
+        | Partition (bspRes1, bspRes2) -> 
+            yield! corridorsFor bspRes1
+            yield! corridorsFor bspRes2
     } |> Seq.toList
+
+let rec flattenRanges bspResult = 
+    seq {
+        match bspResult with
+        | Leaf range -> yield range
+        | Partition (bspRes1, bspRes2) ->
+            yield! flattenRanges bspRes1
+            yield! flattenRanges bspRes2
+    } |> Seq.toList
+
+let inRange (ox, oy) (Range (x, y, width, height)) =
+    ox >= x && oy >= y && ox < x + width && oy < y + height
 
 let dungeon maxSize minLeafSize minRoomSize = 
     let partitions = bsp minLeafSize (Range (0, 0, maxSize, maxSize))
-    let rooms = partitions |> asRooms minRoomSize
-    let corridors = partitions |> asCorridors
+    let rooms = asRooms minRoomSize partitions
+    let allOpen = List.concat [flattenRanges rooms; corridorsFor rooms]
+
     [0..maxSize - 1] |> List.collect (fun x -> 
     [0..maxSize - 1] |> List.map (fun y -> 
-        let isWall = 
-            List.exists (inRange (x, y)) rooms |> not
-            && List.exists (inRange (x, y)) corridors |> not
+        let isWall = List.exists (inRange (x, y)) allOpen |> not
         Tile (x, y, isWall)))
     
