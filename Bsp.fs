@@ -16,9 +16,10 @@ open Model
 // might require a test to ensure no intersection
 
 type Range = Range of x:int * y:int * width:int * height:int
+type PartitionType = Vertical | Horizontal
 type BspResult = 
     | Leaf of Range
-    | Partition of BspResult * BspResult
+    | Partition of PartitionType * BspResult * BspResult
 
 let random = new System.Random()
 
@@ -35,11 +36,11 @@ let rec bspRooms minLeafSize minRoomSize (Range (x, y, width, height)) =
     let splitOnX () = 
         let wiggleRoom = width - minPartitionSize
         let mid = random.Next(minLeafSize, minLeafSize + wiggleRoom + 1)
-        Partition (recBsp (x, y, mid, height), recBsp (x + mid, y, width - mid, height))
+        Partition (Vertical, recBsp (x, y, mid, height), recBsp (x + mid, y, width - mid, height))
     let splitOnY () =
         let wiggleRoom = height - minPartitionSize
         let mid = random.Next(minLeafSize, minLeafSize + wiggleRoom + 1)
-        Partition (recBsp (x, y, width, mid), recBsp (x, y + mid, width, height - mid))
+        Partition (Horizontal, recBsp (x, y, width, mid), recBsp (x, y + mid, width, height - mid))
 
     if width <= minPartitionSize && height <= minPartitionSize then 
         Leaf <| roomIn minRoomSize (Range (x, y, width, height))
@@ -55,34 +56,32 @@ let rec bspRooms minLeafSize minRoomSize (Range (x, y, width, height)) =
             splitOnY ()
 
 let corridorBetween (Range (x1, y1, w1, h1)) (Range (x2, y2, w2, h2)) =
+    // TODO make an option function - if range1 and range2 dont overlap, return none
     if x1 + w1 < x2 then
         // horizontal link
         let y = ((max y1 y2) + (min (y1 + h1) (y2 + h2))) / 2
-        Range (x1 + w1, y, x2 - (x1 + w1), 1)
+        let length = x2 - (x1 + w1)
+        Range (x1 + w1, y, length, 1), length
     else
         let x = ((max x1 x2) + (min (x1 + w1) (x2 + w2))) / 2
-        Range (x, y1 + h1, 1, y2 - (y1 + h1))
-
-let rec corridorsFor bspResult =
-    seq {
-        match bspResult with
-        | Partition (Leaf room1, Leaf room2) -> 
-            yield corridorBetween room1 room2
-        | Leaf _ -> ()
-        | Partition (bspRes1, bspRes2) -> 
-            yield! corridorsFor bspRes1
-            yield! corridorsFor bspRes2
-    } |> Seq.toList
+        let length = y2 - (y1 + h1)
+        Range (x, y1 + h1, 1, length), length
 
 let rec joined bspResult = 
+    let sorter partitionType isFirst (Range (x, y, w, h)) = 
+        match partitionType with
+        | Vertical -> if isFirst then x + w else -x
+        | Horizontal -> if isFirst then y + h else -y
+
     seq {
         match bspResult with
         | Leaf room -> yield room
-        | Partition (bspRes1, bspRes2) ->
-            let spaces1 = joined bspRes1
-            let spaces2 = joined bspRes2
+        | Partition (partitionType, bspRes1, bspRes2) ->
+            let spaces1 = joined bspRes1 |> List.sortByDescending (sorter partitionType true)
+            let spaces2 = joined bspRes2 |> List.sortByDescending (sorter partitionType false)
 
-            
+            // TODO get all corridors between pairs of spaces1, spaces2
+            // TODO select shortest
 
             yield! spaces1
             //yield corridor
