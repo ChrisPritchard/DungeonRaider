@@ -22,9 +22,15 @@ type BspResult =
 
 let random = new System.Random()
 
-let rec bsp minLeafSize (Range (x, y, width, height)) = 
+let rec bspRooms minLeafSize minRoomSize (Range (x, y, width, height)) = 
     let minPartitionSize = minLeafSize * 2
-    let recBsp = Range >> bsp minLeafSize
+    let recBsp = Range >> bspRooms minLeafSize minRoomSize
+    let roomIn minRoomSize (Range (x, y, width, height)) =
+        let roomWidth = random.Next(minRoomSize, width - 1)
+        let roomHeight = random.Next(minRoomSize, height - 1)
+        let roomX = x + random.Next(1, width - roomWidth - 1)
+        let roomY = y + random.Next(1, height - roomHeight - 1)
+        Range (roomX, roomY, roomWidth, roomHeight)
 
     let splitOnX () = 
         let wiggleRoom = width - minPartitionSize
@@ -36,7 +42,7 @@ let rec bsp minLeafSize (Range (x, y, width, height)) =
         Partition (recBsp (x, y, width, mid), recBsp (x, y + mid, width, height - mid))
 
     if width <= minPartitionSize && height <= minPartitionSize then 
-        Leaf (Range (x, y, width, height))
+        Leaf <| roomIn minRoomSize (Range (x, y, width, height))
     else if width <= minPartitionSize then
         splitOnY ()
     else if height <= minPartitionSize then
@@ -47,19 +53,6 @@ let rec bsp minLeafSize (Range (x, y, width, height)) =
             splitOnX ()
         | _ ->
             splitOnY ()
-
-let roomIn (Range (x, y, width, height)) minRoomSize =
-    let roomWidth = random.Next(minRoomSize, width - 1)
-    let roomHeight = random.Next(minRoomSize, height - 1)
-    let roomX = x + random.Next(1, width - roomWidth - 1)
-    let roomY = y + random.Next(1, height - roomHeight - 1)
-    Range (roomX, roomY, roomWidth, roomHeight)
-
-let rec asRooms minRoomSize bspResult = 
-    match bspResult with
-    | Leaf range -> Leaf <| roomIn range minRoomSize
-    | Partition (bspRes1, bspRes2) -> 
-        Partition (asRooms minRoomSize bspRes1, asRooms minRoomSize bspRes2)
 
 let corridorBetween (Range (x1, y1, w1, h1)) (Range (x2, y2, w2, h2)) =
     if x1 + w1 < x2 then
@@ -81,22 +74,27 @@ let rec corridorsFor bspResult =
             yield! corridorsFor bspRes2
     } |> Seq.toList
 
-let rec flattenRanges bspResult = 
+let rec joined bspResult = 
     seq {
         match bspResult with
-        | Leaf range -> yield range
+        | Leaf room -> yield room
         | Partition (bspRes1, bspRes2) ->
-            yield! flattenRanges bspRes1
-            yield! flattenRanges bspRes2
+            let spaces1 = joined bspRes1
+            let spaces2 = joined bspRes2
+
+            
+
+            yield! spaces1
+            //yield corridor
+            yield! spaces2
     } |> Seq.toList
 
-let inRange (ox, oy) (Range (x, y, width, height)) =
-    ox >= x && oy >= y && ox < x + width && oy < y + height
-
 let dungeon maxSize minLeafSize minRoomSize = 
-    let partitions = bsp minLeafSize (Range (0, 0, maxSize, maxSize))
-    let rooms = asRooms minRoomSize partitions
-    let allOpen = List.concat [flattenRanges rooms; corridorsFor rooms]
+    let rooms = bspRooms minLeafSize minRoomSize (Range (0, 0, maxSize, maxSize))
+    let allOpen = joined rooms
+    
+    let inRange (ox, oy) (Range (x, y, width, height)) =
+        ox >= x && oy >= y && ox < x + width && oy < y + height
 
     [0..maxSize - 1] |> List.collect (fun x -> 
     [0..maxSize - 1] |> List.map (fun y -> 
