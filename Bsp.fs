@@ -55,48 +55,41 @@ let rec bspRooms minLeafSize minRoomSize (Range (x, y, width, height)) =
         | _ ->
             splitOnY ()
 
-let corridorBetween (Range (x1, y1, w1, h1)) (Range (x2, y2, w2, h2)) =
-    // TODO make an option function - if range1 and range2 dont overlap, return none
-    let isLeft = x1 + w1 < x2
-    let isAbove = y1 + h1 < y2
+let corridorBetween partitionType (Range (x1, y1, w1, h1)) (Range (x2, y2, w2, h2)) =
+    let isNotAbove = x1 + w1 <= x2 || x1 >= x2 + w2
+    let isNotLeft = y1 + h1 <= y2 || y1 >= y2 + h2
 
-    match isLeft, isAbove with
-    | false, false -> None // no overlap
-    | true, false -> // horizontal align
+    match partitionType with
+    | Vertical when isNotLeft -> None // no overlap
+    | Horizontal when isNotAbove -> None
+    | Vertical ->
         let oy = max y1 y2
         let oh = (min (y1 + h1) (y2 + h2)) - oy
         let mid = oy + (oh / 2)
         let length = x2 - (x1 + w1)
         Some <| (Range (x1 + w1, mid, length, 1), length)
-    | false, true -> // vertical align
+    | Horizontal ->
         let ox = max x1 x2
         let ow = (min (x1 + w1) (x2 + w2)) - ox
         let mid = ox + (ow / 2)
         let length = y2 - (y1 + h1)
-        Some <| (Range (mid, y1 + y1, 1, length), length)
-    | true, true -> None // intersection I guess
+        Some <| (Range (mid, y1 + h1, 1, length), length)
 
 let rec joined bspResult = 
-    let sorter partitionType isFirst (Range (x, y, w, h)) = 
-        match partitionType with
-        | Vertical -> if isFirst then x + w else -x
-        | Horizontal -> if isFirst then y + h else -y
-
     seq {
         match bspResult with
         | Leaf room -> yield room
         | Partition (partitionType, bspRes1, bspRes2) ->
-            let spaces1 = joined bspRes1 |> List.sortByDescending (sorter partitionType true)
-            let spaces2 = joined bspRes2 |> List.sortByDescending (sorter partitionType false)
+            let spaces1 = joined bspRes1
+            let spaces2 = joined bspRes2
 
             let corridor = 
                 spaces1 |> Seq.collect (fun space1 -> spaces2 |> Seq.map (fun space2 -> 
-                    corridorBetween space1 space2))
+                    corridorBetween partitionType space1 space2))
                 |> Seq.choose id |> Seq.sortBy (fun (_, length) -> length) |> Seq.tryHead
-            match corridor with Some (c, _) -> yield c | _ -> ()
 
             yield! spaces1
-            //yield corridor
+            match corridor with Some (c, _) -> yield c | _ -> ()
             yield! spaces2
     } |> Seq.toList
 
