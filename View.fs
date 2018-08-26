@@ -13,12 +13,16 @@ let assetsToLoad = [
 ]
 
 let (tx, ty) = 10, 10
-let wallColour = new Color(50,50,50)
-let openColour = Color.White
+
+let colourFor =
+    function
+    | Room -> Color.White
+    | Corridor -> new Color(200,200,200)
+    | _ -> new Color(50,50,50)
 
 let getView runState worldState =
     match worldState with
     | MapView map ->
-        let blocks = map |> List.map (fun (Tile (x, y, wall)) -> 
-            Image ("white", (x*tx,y*ty,tx,ty), if wall then wallColour else openColour))
+        let blocks = map |> List.map (fun (Tile (x, y, kind)) -> 
+            Image ("white", (x*tx,y*ty,tx,ty), colourFor kind))
         blocks

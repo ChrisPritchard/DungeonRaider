@@ -2,48 +2,36 @@ module Bsp
 
 open Model
 
-// what do i want to do here?
-// 1. divide into a tree
-// 2. join each parition
-// - joining involves:
-// a. determining type (horizontal or vertical) - this can be derived
-// b. finding all ranges in each branch
-// c. starting from the middle, find a corridor between that will connect two ranges without breaking rules
-// cb. or, i could get the centre of each room, find the closest to the middle...this seems silly
-// so how do I do this find algorithm?
-// i. get the closest to the edge (maybe just sort)
-// ii. run iterate out from the centre (both dirs) until the shortest corridor is found that links and follows rules
-// might require a test to ensure no intersection
-
-type Range = Range of x:int * y:int * width:int * height:int
+type Range = Range of kind:TileKind option * x:int * y:int * width:int * height:int
 type PartitionType = Vertical | Horizontal
-type BspResult = 
+type BspResult =
     | Leaf of Range
     | Partition of PartitionType * BspResult * BspResult
 
 let random = new System.Random()
 
-let rec bspRooms minLeafSize minRoomSize (Range (x, y, width, height)) = 
+let rec bspRooms minLeafSize minRoomSize (Range (_, x, y, width, height)) = 
     let minPartitionSize = minLeafSize * 2
     let recBsp = Range >> bspRooms minLeafSize minRoomSize
-    let roomIn minRoomSize (Range (x, y, width, height)) =
+
+    let roomIn minRoomSize (Range (_, x, y, width, height)) =
         let roomWidth = random.Next(minRoomSize, width - 1)
         let roomHeight = random.Next(minRoomSize, height - 1)
         let roomX = x + random.Next(1, width - roomWidth - 1)
         let roomY = y + random.Next(1, height - roomHeight - 1)
-        Range (roomX, roomY, roomWidth, roomHeight)
+        Range (Some Room, roomX, roomY, roomWidth, roomHeight)
 
     let splitOnX () = 
         let wiggleRoom = width - minPartitionSize
         let mid = random.Next(minLeafSize, minLeafSize + wiggleRoom + 1)
-        Partition (Vertical, recBsp (x, y, mid, height), recBsp (x + mid, y, width - mid, height))
+        Partition (Vertical, recBsp (None, x, y, mid, height), recBsp (None, x + mid, y, width - mid, height))
     let splitOnY () =
         let wiggleRoom = height - minPartitionSize
         let mid = random.Next(minLeafSize, minLeafSize + wiggleRoom + 1)
-        Partition (Horizontal, recBsp (x, y, width, mid), recBsp (x, y + mid, width, height - mid))
+        Partition (Horizontal, recBsp (None, x, y, width, mid), recBsp (None, x, y + mid, width, height - mid))
 
     if width <= minPartitionSize && height <= minPartitionSize then 
-        Leaf <| roomIn minRoomSize (Range (x, y, width, height))
+        Leaf <| roomIn minRoomSize (Range (None, x, y, width, height))
     else if width <= minPartitionSize then
         splitOnY ()
     else if height <= minPartitionSize then
@@ -55,7 +43,7 @@ let rec bspRooms minLeafSize minRoomSize (Range (x, y, width, height)) =
         | _ ->
             splitOnY ()
 
-let corridorBetween partitionType (Range (x1, y1, w1, h1)) (Range (x2, y2, w2, h2)) =
+let corridorBetween partitionType (Range (_, x1, y1, w1, h1)) (Range (_, x2, y2, w2, h2)) =
     let isNotAbove = x1 + w1 <= x2 || x1 >= x2 + w2
     let isNotLeft = y1 + h1 <= y2 || y1 >= y2 + h2
 
@@ -67,13 +55,13 @@ let corridorBetween partitionType (Range (x1, y1, w1, h1)) (Range (x2, y2, w2, h
         let oh = (min (y1 + h1) (y2 + h2)) - oy
         let mid = oy + (oh / 2)
         let length = x2 - (x1 + w1)
-        Some <| (Range (x1 + w1, mid, length, 1), length)
+        Some <| (Range (Some Corridor, x1 + w1, mid, length, 1), length)
     | Horizontal ->
         let ox = max x1 x2
         let ow = (min (x1 + w1) (x2 + w2)) - ox
         let mid = ox + (ow / 2)
         let length = y2 - (y1 + h1)
-        Some <| (Range (mid, y1 + h1, 1, length), length)
+        Some <| (Range (Some Corridor, mid, y1 + h1, 1, length), length)
 
 let rec joined bspResult = 
     seq {
@@ -94,14 +82,18 @@ let rec joined bspResult =
     } |> Seq.toList
 
 let dungeon maxSize minLeafSize minRoomSize = 
-    let rooms = bspRooms minLeafSize minRoomSize (Range (0, 0, maxSize, maxSize))
+    let rooms = bspRooms minLeafSize minRoomSize (Range (None, 0, 0, maxSize, maxSize))
     let allOpen = joined rooms
     
-    let inRange (ox, oy) (Range (x, y, width, height)) =
-        ox >= x && oy >= y && ox < x + width && oy < y + height
+    let inRange (ox, oy) (Range (kindOption, x, y, width, height)) =
+        match kindOption with
+        | None -> false
+        | Some _ ->
+            ox >= x && oy >= y && ox < x + width && oy < y + height
 
     [0..maxSize - 1] |> List.collect (fun x -> 
     [0..maxSize - 1] |> List.map (fun y -> 
-        let isWall = List.exists (inRange (x, y)) allOpen |> not
-        Tile (x, y, isWall)))
+        let inRange = List.tryFind (inRange (x, y)) allOpen
+        let kind = match inRange with | Some (Range ((Some kind), _, _, _, _)) -> kind | _ -> Wall
+        Tile (x, y, kind)))
     
