@@ -10,8 +10,9 @@ let (dungeonSize, leafSize, roomSize) = 60, 10, 5
 let advanceGame (runState : RunState) worldState =
     match worldState with
     | _ when runState.WasJustPressed Keys.Escape -> None
-    | _ when runState.WasJustPressed Keys.R ->
+    | Some (MapView _) when runState.WasJustPressed Keys.R ->
         dungeon dungeonSize leafSize roomSize |> MapView |> Some
-    | None -> 
-        dungeon dungeonSize leafSize roomSize |> MapView |> Some
+    // | None -> 
+    //     dungeon dungeonSize leafSize roomSize |> MapView |> Some
+    | None -> Some CharacterRender
     | other -> other

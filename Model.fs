@@ -5,3 +5,4 @@ and TileKind = Room | Door | Corridor | Wall
 
 type GameModel = 
     | MapView of Tile list
+    | CharacterRender

@@ -28,3 +28,7 @@ let getView runState worldState =
         let blocks = map |> List.map (fun (Tile (x, y, kind)) -> 
             Image ("white", (x*tx,y*ty,tx,ty), colourFor kind))
         blocks
+    | CharacterRender ->
+        [
+            MappedImage ("rogue", "stand1_A", (0, 0, 128, 128), Color.White)
+        ]
