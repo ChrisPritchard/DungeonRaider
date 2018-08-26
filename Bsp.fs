@@ -43,11 +43,28 @@ let rec bspRooms minLeafSize minRoomSize (Range (_, x, y, width, height)) =
         | _ ->
             splitOnY ()
 
-let corridorBetween partitionType (Range (_, x1, y1, w1, h1)) (Range (_, x2, y2, w2, h2)) =
+let corridorAndDoors (x, y, w, h) length =
+    if length <= 2 then
+        Some ([Range (Some Corridor, x, y, w, h)], length)
+    else
+        let set = 
+            seq {
+                match w with
+                    | 1 -> yield Range (Some Corridor, x, y + 1, w, h - 2)
+                    | _ -> yield Range (Some Corridor, x + 1, y, w - 2, h)
+                yield Range (Some Door, x, y, 1, 1)
+                match w with
+                    | 1 -> yield Range (Some Door, x, y + h - 1, 1, 1)
+                    | _ -> yield Range (Some Door, x + w - 1, y, 1, 1)
+            } |> Seq.toList
+        Some (set, length)
+
+let tryFindCorridorBetween partitionType (Range (kind1, x1, y1, w1, h1)) (Range (kind2, x2, y2, w2, h2)) =
     let isNotAbove = x1 + w1 <= x2 || x1 >= x2 + w2
     let isNotLeft = y1 + h1 <= y2 || y1 >= y2 + h2
 
     match partitionType with
+    | _ when kind1 = Some Door || kind2 = Some Door -> None
     | Vertical when isNotLeft -> None // no overlap
     | Horizontal when isNotAbove -> None
     | Vertical ->
@@ -55,13 +72,16 @@ let corridorBetween partitionType (Range (_, x1, y1, w1, h1)) (Range (_, x2, y2,
         let oh = (min (y1 + h1) (y2 + h2)) - oy
         let mid = oy + (oh / 2)
         let length = x2 - (x1 + w1)
-        Some <| (Range (Some Corridor, x1 + w1, mid, length, 1), length)
+        corridorAndDoors (x1 + w1, mid, length, 1) length
     | Horizontal ->
         let ox = max x1 x2
         let ow = (min (x1 + w1) (x2 + w2)) - ox
         let mid = ox + (ow / 2)
         let length = y2 - (y1 + h1)
-        Some <| (Range (Some Corridor, mid, y1 + h1, 1, length), length)
+        corridorAndDoors (mid, y1 + h1, 1, length) length
+
+let pairs sequence1 sequence2 = 
+    sequence1 |> Seq.collect (fun item1 -> sequence2 |> Seq.map (fun item2 -> (item1, item2)))
 
 let rec joined bspResult = 
     seq {
@@ -72,12 +92,15 @@ let rec joined bspResult =
             let spaces2 = joined bspRes2
 
             let corridor = 
-                spaces1 |> Seq.collect (fun space1 -> spaces2 |> Seq.map (fun space2 -> 
-                    corridorBetween partitionType space1 space2))
-                |> Seq.choose id |> Seq.sortBy (fun (_, length) -> length) |> Seq.tryHead
+                pairs spaces1 spaces2 
+                |> Seq.map (fun (space1, space2) -> 
+                    tryFindCorridorBetween partitionType space1 space2)
+                |> Seq.choose id 
+                |> Seq.sortBy (fun (_, length) -> length) 
+                |> Seq.tryHead
 
             yield! spaces1
-            match corridor with Some (c, _) -> yield c | _ -> ()
+            match corridor with Some (c, _) -> yield! c | _ -> ()
             yield! spaces2
     } |> Seq.toList
 
