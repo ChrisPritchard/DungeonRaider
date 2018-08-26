@@ -22,13 +22,26 @@ let colourFor =
     | Door -> Color.Brown
     | Wall -> new Color(50,50,50)
 
-let getView runState worldState =
+let frameSpeed = 150.
+
+let frameFor elapsed characterState = 
+    let frameFor start = (((elapsed - start) % (10. * frameSpeed)) / frameSpeed) + 1. |> floor |> int
+    match characterState with
+    | Standing start -> sprintf "stand%i_A" <| frameFor start
+    | Gesturing start -> sprintf "gesture%i_A" <| frameFor start
+    | Walking start -> sprintf "walk%i_A" <| frameFor start
+    | Striking start -> sprintf "strike%i_A" <| frameFor start
+    | Dying start -> sprintf "die%i_A" <| frameFor start
+    | Dead -> "die10_A"
+
+let getView (runState : RunState) worldState =
+    let elapsed = runState.elapsed
     match worldState with
     | MapView map ->
         let blocks = map |> List.map (fun (Tile (x, y, kind)) -> 
             Image ("white", (x*tx,y*ty,tx,ty), colourFor kind))
         blocks
-    | CharacterRender ->
+    | CharacterRender state ->
         [
-            MappedImage ("rogue", "stand1_A", (0, 0, 128, 128), Color.White)
+            MappedImage ("rogue", frameFor elapsed state, (screenWidth / 2 - 64, screenHeight / 2 - 64, 128, 128), Color.White)
         ]
