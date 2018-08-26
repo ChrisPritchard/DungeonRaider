@@ -10,6 +10,7 @@ let resolution = Windowed (screenWidth, screenHeight)
 let assetsToLoad = [
     Font ("default", "Content/coders_crux")
     Texture ("white", "./Content/white.png")
+    TextureMap ("rogue", "./Content/Sprites/rogue.png", "./Content/Sprites/standard-key.csv")
 ]
 
 let (tx, ty) = 10, 10
