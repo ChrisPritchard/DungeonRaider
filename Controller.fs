@@ -8,9 +8,11 @@ open Microsoft.Xna.Framework.Input
 
 let (dungeonSize, leafSize, roomSize) = 60, 10, 5
 
+let leftKeys = [Keys.Left;Keys.A]
+let rightKeys = [Keys.Right;Keys.D]
 let walkKeys = [Keys.Left;Keys.Right;Keys.Up;Keys.Down;Keys.A;Keys.D;Keys.W;Keys.S]
 
-let handleCharacterState (runState : RunState) state =
+let handleCharacterState (runState : RunState) state facing =
     let elapsed = runState.elapsed
     let newState = 
         match state with
@@ -35,7 +37,14 @@ let handleCharacterState (runState : RunState) state =
         | Walking _ when runState.IsAnyPressed walkKeys |> not -> 
             Standing elapsed
         | other -> other
-    CharacterRender newState |> Some
+    let newFacing = 
+        match state with
+        | Standing _ | Walking _ ->
+            if runState.IsAnyPressed leftKeys then Left
+            else if runState.IsAnyPressed rightKeys then Right
+            else facing
+        | _ -> facing
+    CharacterRender (newState, newFacing) |> Some
     
 
 let advanceGame (runState : RunState) worldState =
@@ -45,6 +54,6 @@ let advanceGame (runState : RunState) worldState =
         dungeon dungeonSize leafSize roomSize |> MapView |> Some
     // | None -> 
     //     dungeon dungeonSize leafSize roomSize |> MapView |> Some
-    | None -> CharacterRender (Standing 0.) |> Some
-    | Some (CharacterRender state) -> handleCharacterState runState state
+    | None -> CharacterRender (Standing 0., Left) |> Some
+    | Some (CharacterRender (state, facing)) -> handleCharacterState runState state facing
     | other -> other

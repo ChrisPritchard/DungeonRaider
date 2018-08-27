@@ -11,6 +11,8 @@ type CharacterState =
     | Dying of startTime:float 
     | Dead
 
+type Facing = Left | Right
+
 type GameModel = 
     | MapView of Tile list
-    | CharacterRender of CharacterState
+    | CharacterRender of CharacterState * Facing
