@@ -14,23 +14,24 @@ let walkKeys = [Keys.Left;Keys.Right;Keys.Up;Keys.Down;Keys.A;Keys.D;Keys.W;Keys
 
 let handleCharacterState (runState : RunState) state facing =
     let elapsed = runState.elapsed
+    let animFinished start = elapsed - start >= 10. * frameSpeed
     let newState = 
         match state with
         | _ when runState.WasJustPressed Keys.R ->
             Standing elapsed
         | Dead -> 
             Dead
-        | Dying start when elapsed - start >= 10. * frameSpeed ->
+        | Dying start when animFinished start ->
             Dead
         | _ when runState.WasJustPressed Keys.X -> 
             Dying elapsed
         | Standing _ when runState.WasJustPressed Keys.C -> 
             Gesturing elapsed
-        | Gesturing start when elapsed - start >= 10. * frameSpeed ->
+        | Gesturing start when animFinished start ->
             Standing elapsed
-        | Standing _ when runState.WasJustPressed Keys.F -> 
+        | Standing _ when runState.IsPressed Keys.F -> 
             Striking elapsed
-        | Striking start when elapsed - start >= 10. * frameSpeed ->
+        | Striking start when animFinished start ->
             Standing elapsed
         | Standing _ when runState.IsAnyPressed walkKeys -> 
             Walking elapsed
