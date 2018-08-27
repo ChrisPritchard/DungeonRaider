@@ -4,13 +4,17 @@ open GameCore
 open Model
 open Microsoft.Xna.Framework
 
-let screenWidth, screenHeight = 800, 600
+let screenWidth, screenHeight = 800, 800
 let resolution = Windowed (screenWidth, screenHeight)
 
 let assetsToLoad = [
     Font ("default", "Content/coders_crux")
     Texture ("white", "./Content/white.png")
+    TextureMap ("cleric", "./Content/Sprites/cleric.png", "./Content/Sprites/standard-key.csv")
+    TextureMap ("ranger", "./Content/Sprites/ranger.png", "./Content/Sprites/standard-key.csv")
     TextureMap ("rogue", "./Content/Sprites/rogue.png", "./Content/Sprites/standard-key.csv")
+    TextureMap ("warrior", "./Content/Sprites/warrior.png", "./Content/Sprites/standard-key.csv")
+    TextureMap ("wizard", "./Content/Sprites/wizard.png", "./Content/Sprites/standard-key.csv")
 ]
 
 let (tx, ty) = 10, 10
@@ -44,5 +48,9 @@ let getView (runState : RunState) worldState =
         blocks
     | CharacterRender (state, facing) ->
         [
+            MappedImage ("cleric", frameFor elapsed state facing, (screenWidth / 2 - 64, screenHeight / 2 - 64 - 256, 128, 128), Color.White)
+            MappedImage ("ranger", frameFor elapsed state facing, (screenWidth / 2 - 64, screenHeight / 2 - 64 - 128, 128, 128), Color.White)
             MappedImage ("rogue", frameFor elapsed state facing, (screenWidth / 2 - 64, screenHeight / 2 - 64, 128, 128), Color.White)
+            MappedImage ("warrior", frameFor elapsed state facing, (screenWidth / 2 - 64, screenHeight / 2 - 64 + 128, 128, 128), Color.White)
+            MappedImage ("wizard", frameFor elapsed state facing, (screenWidth / 2 - 64, screenHeight / 2 - 64 + 256, 128, 128), Color.White)
         ]
