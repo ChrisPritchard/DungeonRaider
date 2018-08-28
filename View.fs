@@ -18,7 +18,7 @@ let assetsToLoad = [
     TextureMap ("wizard", "./Content/Sprites/wizard.png", "./Content/Sprites/standard-key.csv")
 ]
 
-let (tx, ty) = 16, 16
+let (tx, ty) = 160, 160
 
 let colourFor =
     function
@@ -40,12 +40,18 @@ let frameFor elapsed state facing =
     | Dying start -> sprintf "die%s%i_A" facing <| frameFor start
     | Dead -> sprintf "die%s10_A" facing
 
+let keyForAdjacency (adjacency : byte) =
+    let text = System.Convert.ToString(adjacency, 2).PadLeft(8, '0')
+    if List.contains adjacency [1uy;4uy;16uy;17uy;64uy;68uy] then text + "_1" else text
+
 let getView (runState : RunState) worldState =
     let elapsed = runState.elapsed
     match worldState with
     | MapView map ->
         let blocks = map |> List.map (fun (Tile (x, y, kind)) -> 
-            Image ("white", (x*tx,y*ty,tx,ty), colourFor kind))
+            match kind with
+            | Wall key -> MappedImage ("dungeon", sprintf "ceiling_%s" (keyForAdjacency key), (x*tx,y*ty,tx,ty), Color.White)
+            | _ -> Image ("white", (x*tx,y*ty,tx,ty), colourFor kind))
         blocks
     | CharacterRender (state, facing) ->
         [

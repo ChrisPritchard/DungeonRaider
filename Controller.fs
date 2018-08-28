@@ -6,7 +6,7 @@ open Bsp
 open View
 open Microsoft.Xna.Framework.Input
 
-let (dungeonSize, leafSize, roomSize) = 40, 8, 5
+let (dungeonSize, leafSize, roomSize) = 5, 5, 3
 
 let leftKeys = [Keys.Left;Keys.A]
 let rightKeys = [Keys.Right;Keys.D]

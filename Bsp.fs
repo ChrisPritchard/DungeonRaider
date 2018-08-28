@@ -8,7 +8,7 @@ type BspResult =
     | Leaf of Range
     | Partition of PartitionType * BspResult * BspResult
 
-let random = new System.Random()
+let random = new System.Random(1)
 
 let rec bspRooms minLeafSize minRoomSize (Range (_, x, y, width, height)) = 
     let minPartitionSize = minLeafSize * 2
@@ -126,9 +126,9 @@ let dungeon maxSize minLeafSize minRoomSize =
             tiles 
             |> List.filter 
                 (fun (Tile (ox, oy, kind)) -> 
-                match kind with
-                | Wall _ -> false
-                | _ -> abs (ox - x) <= 1 && abs (oy - y) <= 1 && ox <> x && oy <> y)
+                    match kind with
+                    | Wall _ -> false
+                    | _ -> abs (ox - x) <= 1 && abs (oy - y) <= 1 && not (ox = x && oy = y))
             |> List.map (fun (Tile (ox, oy, _)) -> ox - x, oy - y)
         adjacent 
             |> List.map (fun o -> adjacencyKey.Item o) 
