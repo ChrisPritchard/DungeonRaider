@@ -18,14 +18,14 @@ let assetsToLoad = [
     TextureMap ("wizard", "./Content/Sprites/wizard.png", "./Content/Sprites/standard-key.csv")
 ]
 
-let (tx, ty) = 10, 10
+let (tx, ty) = 16, 16
 
 let colourFor =
     function
     | Room -> Color.White
     | Corridor -> new Color(200,200,200)
     | Door -> Color.Brown
-    | Wall -> new Color(50,50,50)
+    | Wall _ -> new Color(50,50,50)
 
 let frameSpeed = 150.
 

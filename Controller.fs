@@ -6,7 +6,7 @@ open Bsp
 open View
 open Microsoft.Xna.Framework.Input
 
-let (dungeonSize, leafSize, roomSize) = 60, 10, 5
+let (dungeonSize, leafSize, roomSize) = 40, 8, 5
 
 let leftKeys = [Keys.Left;Keys.A]
 let rightKeys = [Keys.Right;Keys.D]
@@ -53,8 +53,8 @@ let advanceGame (runState : RunState) worldState =
     | _ when runState.WasJustPressed Keys.Escape -> None
     | Some (MapView _) when runState.WasJustPressed Keys.R ->
         dungeon dungeonSize leafSize roomSize |> MapView |> Some
-    // | None -> 
-    //     dungeon dungeonSize leafSize roomSize |> MapView |> Some
-    | None -> CharacterRender (Standing 0., Left) |> Some
+    | None -> 
+        dungeon dungeonSize leafSize roomSize |> MapView |> Some
+    //| None -> CharacterRender (Standing 0., Left) |> Some
     | Some (CharacterRender (state, facing)) -> handleCharacterState runState state facing
     | other -> other
