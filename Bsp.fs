@@ -104,6 +104,11 @@ let rec joined bspResult =
             yield! spaces2
     } |> Seq.toList
 
+// TODO: change adjacency check to check specific scenarios:
+// - corners only (diagonal adjacent walls)
+// - corners and adjacent walls (corner walls)
+// - sides (regular walls)
+
 let getOpenAdjacency x y tiles =
     let adjacent = 
         tiles 
