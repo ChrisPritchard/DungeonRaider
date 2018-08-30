@@ -104,11 +104,6 @@ let rec joined bspResult =
             yield! spaces2
     } |> Seq.toList
 
-// TODO: change adjacency check to check specific scenarios:
-// - corners only (diagonal adjacent walls)
-// - corners and adjacent walls (corner walls)
-// - sides (regular walls)
-
 let getOpenAdjacency x y tiles =
     let adjacent = 
         tiles 
@@ -118,8 +113,10 @@ let getOpenAdjacency x y tiles =
                 | Wall _ -> false
                 | _ -> abs (ox - x) <= 1 && abs (oy - y) <= 1 && not (ox = x && oy = y))
         |> List.map (fun (Tile (ox, oy, _)) -> ox - x, oy - y)
-    adjacent 
+    let keys =
+        adjacent 
         |> List.map (fun o -> adjacencyKey.Item o) 
+    keys
         |> List.fold (fun result k -> result ||| k) 0 
         |> byte 
         |> Wall

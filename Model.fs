@@ -15,6 +15,9 @@ let adjacencyKey =
         (-1,0),1
     ] |> Map.ofList
 
+let corners = [128,32,8,2]
+let walls = [64,16,4,1]
+
 type CharacterState =
     | Standing of startTime:float 
     | Gesturing of startTime:float 
