@@ -48,11 +48,10 @@ type RunState = {
     pressed: bool * bool
 }
     
-type RunState with
-    member __.WasJustPressed key = List.contains key __.keyboard.keysDown
-    member __.WasAnyJustPressed keyList = keyList |> List.exists __.WasJustPressed
-    member __.IsPressed key = List.contains key __.keyboard.pressed
-    member __.IsAnyPressed keyList = keyList |> List.exists __.IsPressed
+let wasJustPressed key runState = List.contains key runState.keyboard.keysDown
+let wasAnyJustPressed keyList runState = keyList |> List.exists (fun k -> wasJustPressed k runState)
+let isPressed key runState = List.contains key runState.keyboard.pressed
+let isAnyPressed keyList runState = keyList |> List.exists (fun k -> isPressed k runState)
 
 type GameLoop<'TModel> (resolution, assetsToLoad, updateModel, getView)
     as this = 

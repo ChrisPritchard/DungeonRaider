@@ -20,26 +20,6 @@ let assetsToLoad = [
     TextureMap ("wizard", "./Content/Sprites/wizard.png", "./Content/Sprites/standard-key.csv")
 ]
 
-let stringToByte s = 
-    s 
-    |> Seq.rev 
-    |> Seq.mapi (fun i c -> 
-        c.ToString() 
-        |> int 
-        |> fun ci -> ci * pown 2 i) 
-    |> Seq.sum
-    |> byte
-
-let validCeilings = 
-    System.IO.File.ReadAllLines("./Content/Sprites/dungeon-key.csv")
-    |> Seq.skip 1
-    |> Seq.map (fun line -> 
-        line.Split(',') 
-        |> Seq.head 
-        |> fun s -> s.Split('_') |> Seq.item 1 
-        |> stringToByte)
-    |> Seq.toList
-
 let colourFor =
     function
     | Room -> Color.White
@@ -61,11 +41,8 @@ let frameFor elapsed state facing =
     | Dead -> sprintf "die%s10_A" facing
 
 let keyForAdjacency (adjacency : byte) =
-    if List.contains adjacency validCeilings |> not then
-        "11111111"
-    else
-        let text = System.Convert.ToString(adjacency, 2).PadLeft(8, '0')
-        if List.contains adjacency [1uy;4uy;16uy;17uy;64uy;68uy] then text + "_1" else text
+    let text = System.Convert.ToString(adjacency, 2).PadLeft(8, '0')
+    if List.contains adjacency [1uy;4uy;16uy;17uy;64uy;68uy] then text + "_1" else text
 
 let getView (runState : RunState) worldState =
     let elapsed = runState.elapsed
