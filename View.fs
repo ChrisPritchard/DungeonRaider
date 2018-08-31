@@ -40,17 +40,19 @@ let frameFor elapsed state facing =
     | Dying start -> sprintf "die%s%i_A" facing <| frameFor start
     | Dead -> sprintf "die%s10_A" facing
 
-let keyForAdjacency (adjacency : byte) =
+let keyForAdjacency (adjacency : byte) index =
     let text = System.Convert.ToString(adjacency, 2).PadLeft(8, '0')
-    if List.contains adjacency [1uy;4uy;16uy;17uy;64uy;68uy] then text + "_1" else text
+    if List.contains adjacency [1uy;4uy;16uy;17uy;64uy;68uy] then 
+        sprintf "%s_%i" text (index % 3 + 1) 
+    else text
 
 let getView (runState : RunState) worldState =
     let elapsed = runState.elapsed
     match worldState with
     | MapView map ->
-        let blocks = map |> List.map (fun (Tile (x, y, kind)) -> 
+        let blocks = map |> List.mapi (fun i (Tile (x, y, kind)) -> 
             match kind with
-            | Block key -> MappedImage ("dungeon", sprintf "ceiling_%s" (keyForAdjacency key), (x*tx,y*ty,tx,ty), Color.White)
+            | Block key -> MappedImage ("dungeon", sprintf "ceiling_%s" (keyForAdjacency key i), (x*tx,y*ty,tx,ty), Color.White)
             | _ -> Image ("white", (x*tx,y*ty,tx,ty), colourFor kind))
         blocks
     | CharacterRender (state, facing) ->
