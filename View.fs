@@ -20,13 +20,6 @@ let assetsToLoad = [
     TextureMap ("wizard", "./Content/Sprites/wizard.png", "./Content/Sprites/standard-key.csv")
 ]
 
-let colourFor =
-    function
-    | Room -> Color.White
-    | Corridor -> new Color(200,200,200)
-    | Door -> Color.Brown
-    | Block _ -> new Color(50,50,50)
-
 let frameSpeed = 150.
 
 let frameFor elapsed state facing = 
