@@ -119,12 +119,12 @@ let dungeon maxSize minLeafSize minRoomSize =
         [0..maxSize - 1] |> List.collect (fun x -> 
         [0..maxSize - 1] |> List.map (fun y -> 
             let inRange = List.tryFind (inRange (x, y)) allOpen
-            let kind = match inRange with | Some (Range ((Some kind), _, _, _, _)) -> kind | _ -> Block 0uy
-            Tile (x, y, kind)))
+            let kind = match inRange with | Some (Range ((Some kind), _, _, _, _)) -> kind | _ -> Block
+            Tile (x, y, kind, 0uy)))
 
-    tiles |> List.map (fun (Tile (x, y, kind)) -> 
-        let kind = 
+    tiles |> List.map (fun (Tile (x, y, kind, _)) -> 
+        let adjacency = 
             match kind with 
-            | Block _ -> Block <| getOpenAdjacency x y tiles
-            | _ -> kind
-        Tile (x, y, kind))
+            | Block -> getOpenAdjacency x y tiles
+            | _ -> getClosedAdjacency x y tiles
+        Tile (x, y, kind, adjacency))

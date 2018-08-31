@@ -5,7 +5,7 @@ open Model
 open Microsoft.Xna.Framework
 
 let screenWidth, screenHeight = 800, 800
-let (tx, ty) = 64, 64
+let (tx, ty) = 32, 32
 
 let resolution = Windowed (screenWidth, screenHeight)
 
@@ -40,20 +40,34 @@ let frameFor elapsed state facing =
     | Dying start -> sprintf "die%s%i_A" facing <| frameFor start
     | Dead -> sprintf "die%s10_A" facing
 
-let keyForAdjacency (adjacency : byte) index =
+let keyForAdjacency (adjacency : byte) kind index =
     let text = System.Convert.ToString(adjacency, 2).PadLeft(8, '0')
-    if List.contains adjacency [1uy;4uy;16uy;17uy;64uy;68uy] then 
-        sprintf "%s_%i" text (index % 3 + 1) 
-    else text
+    match kind with
+    | _ when List.contains adjacency [68uy;17uy] -> 
+        sprintf "%s_%i" text (index % 2 + 1)
+    | _ when List.contains adjacency [1uy;4uy;16uy;64uy] -> 
+        sprintf "%s_%i" text (index % 3 + 1)
+    | Block ->
+        text
+    | _ when adjacency = 0uy -> 
+        sprintf "%s_%i" text (index % 9 + 1) 
+    | _ when List.contains adjacency [193uy;112uy;28uy;7uy] -> 
+        sprintf "%s_%i" text (index % 2 + 1)
+    | _ ->
+        text
 
-let getView (runState : RunState) worldState =
+let getView runState worldState =
     let elapsed = runState.elapsed
     match worldState with
     | MapView map ->
-        let blocks = map |> List.mapi (fun i (Tile (x, y, kind)) -> 
-            match kind with
-            | Block key -> MappedImage ("dungeon", sprintf "ceiling_%s" (keyForAdjacency key i), (x*tx,y*ty,tx,ty), Color.White)
-            | _ -> Image ("white", (x*tx,y*ty,tx,ty), colourFor kind))
+        let blocks = 
+            map 
+            |> List.mapi (fun i (Tile (x, y, kind, adjacency)) -> 
+                match kind with
+                | Block -> 
+                    MappedImage ("dungeon", sprintf "ceiling_%s" (keyForAdjacency adjacency Block i), (x*tx,y*ty,tx,ty), Color.White)
+                | other -> 
+                    MappedImage ("dungeon", sprintf "floor_%s" (keyForAdjacency adjacency other i), (x*tx,y*ty,tx,ty), Color.White))
         blocks
     | CharacterRender (state, facing) ->
         [
