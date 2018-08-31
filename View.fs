@@ -5,6 +5,8 @@ open Model
 open Microsoft.Xna.Framework
 
 let screenWidth, screenHeight = 800, 800
+let (tx, ty) = 64, 64
+
 let resolution = Windowed (screenWidth, screenHeight)
 
 let assetsToLoad = [
@@ -38,14 +40,12 @@ let validCeilings =
         |> stringToByte)
     |> Seq.toList
 
-let (tx, ty) = 160, 160
-
 let colourFor =
     function
     | Room -> Color.White
     | Corridor -> new Color(200,200,200)
     | Door -> Color.Brown
-    | Wall _ -> new Color(50,50,50)
+    | Block _ -> new Color(50,50,50)
 
 let frameSpeed = 150.
 
@@ -73,7 +73,7 @@ let getView (runState : RunState) worldState =
     | MapView map ->
         let blocks = map |> List.map (fun (Tile (x, y, kind)) -> 
             match kind with
-            | Wall key -> MappedImage ("dungeon", sprintf "ceiling_%s" (keyForAdjacency key), (x*tx,y*ty,tx,ty), Color.White)
+            | Block key -> MappedImage ("dungeon", sprintf "ceiling_%s" (keyForAdjacency key), (x*tx,y*ty,tx,ty), Color.White)
             | _ -> Image ("white", (x*tx,y*ty,tx,ty), colourFor kind))
         blocks
     | CharacterRender (state, facing) ->

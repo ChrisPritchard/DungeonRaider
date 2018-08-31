@@ -1,6 +1,7 @@
 module Bsp
 
 open Model
+open Adjacency
 
 type Range = Range of kind:TileKind option * x:int * y:int * width:int * height:int
 type PartitionType = Vertical | Horizontal
@@ -104,23 +105,6 @@ let rec joined bspResult =
             yield! spaces2
     } |> Seq.toList
 
-let getOpenAdjacency x y tiles =
-    let adjacent = 
-        tiles 
-        |> List.filter 
-            (fun (Tile (ox, oy, kind)) -> 
-                match kind with
-                | Wall _ -> false
-                | _ -> abs (ox - x) <= 1 && abs (oy - y) <= 1 && not (ox = x && oy = y))
-        |> List.map (fun (Tile (ox, oy, _)) -> ox - x, oy - y)
-    let keys =
-        adjacent 
-        |> List.map (fun o -> adjacencyKey.Item o) 
-    keys
-        |> List.fold (fun result k -> result ||| k) 0 
-        |> byte 
-        |> Wall
-
 let dungeon maxSize minLeafSize minRoomSize = 
     let rooms = bspRooms minLeafSize minRoomSize (Range (None, 0, 0, maxSize, maxSize))
     let allOpen = joined rooms
@@ -135,12 +119,12 @@ let dungeon maxSize minLeafSize minRoomSize =
         [0..maxSize - 1] |> List.collect (fun x -> 
         [0..maxSize - 1] |> List.map (fun y -> 
             let inRange = List.tryFind (inRange (x, y)) allOpen
-            let kind = match inRange with | Some (Range ((Some kind), _, _, _, _)) -> kind | _ -> Wall 0uy
+            let kind = match inRange with | Some (Range ((Some kind), _, _, _, _)) -> kind | _ -> Block 0uy
             Tile (x, y, kind)))
 
     tiles |> List.map (fun (Tile (x, y, kind)) -> 
         let kind = 
             match kind with 
-            | Wall _ -> getOpenAdjacency x y tiles
+            | Block _ -> getOpenAdjacency x y tiles
             | _ -> kind
         Tile (x, y, kind))
