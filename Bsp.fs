@@ -125,6 +125,6 @@ let dungeon maxSize minLeafSize minRoomSize =
     tiles |> List.map (fun (Tile (x, y, kind)) -> 
         let kind = 
             match kind with 
-            | Block _ -> getOpenAdjacency x y tiles
+            | Block _ -> Block <| getOpenAdjacency x y tiles
             | _ -> kind
         Tile (x, y, kind))
