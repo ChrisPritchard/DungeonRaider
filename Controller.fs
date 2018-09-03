@@ -61,11 +61,16 @@ let nextPosition runState characterState (x, y) tiles =
     let newPos = 
         match characterState with
         | Walking _ ->
-            if isAnyPressed leftKeys runState then (x - walkSpeed, y)
-            else if isAnyPressed rightKeys runState then (x + walkSpeed, y)
-            else if isAnyPressed upKeys runState then (x, y - walkSpeed)
-            else if isAnyPressed downKeys runState then (x, y + walkSpeed)
-            else (x, y)
+            [
+                leftKeys, -walkSpeed, 0
+                rightKeys, walkSpeed, 0
+                upKeys, 0, -walkSpeed
+                downKeys, 0, walkSpeed
+            ] |> List.fold (fun (rx, ry) (keys, dx, dy) -> 
+                if isAnyPressed keys runState then 
+                    (rx + dx, ry + dy) 
+                else 
+                    (rx, ry)) (x, y)
         | _ -> (x, y)
     if List.exists (validPosInTile newPos) tiles then newPos else (x, y)
 
