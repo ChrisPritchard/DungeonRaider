@@ -8,7 +8,7 @@ open Microsoft.Xna.Framework.Input
 
 //let (dungeonSize, leafSize, roomSize) = 5, 5, 3
 let (dungeonSize, leafSize, roomSize) = 50, 8, 6
-let walkSpeed = 2
+let walkSpeed = tx / 16
 
 let leftKeys = [Keys.Left;Keys.A]
 let rightKeys = [Keys.Right;Keys.D]
@@ -65,7 +65,9 @@ let advanceGame runState worldState =
     | _ when wasJustPressed Keys.Escape runState -> None
     | None -> 
         let map = dungeon dungeonSize leafSize roomSize
-        let (state, facing, position) = (Standing 0., Left, (0, 0))
+        let position = map |> List.pick (fun (Tile (x, y, kind, _)) -> 
+            match kind with Block _ -> None | _ -> Some (x*tx, y*ty))
+        let (state, facing, position) = (Standing 0., Left, position)
         Playing (map, state, facing, position) |> Some
     | Some (Playing (map, state, facing, position)) -> 
         let newState = nextState runState state
