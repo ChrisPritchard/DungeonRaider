@@ -50,15 +50,24 @@ let nextFacing runState characterState facing =
         else facing
     | _ -> facing
 
-let nextPosition runState characterState (x, y) =
-    match characterState with
-    | Walking _ ->
-        if isAnyPressed leftKeys runState then (x - walkSpeed, y)
-        else if isAnyPressed rightKeys runState then (x + walkSpeed, y)
-        else if isAnyPressed upKeys runState then (x, y - walkSpeed)
-        else if isAnyPressed downKeys runState then (x, y + walkSpeed)
-        else (x, y)
-    | _ -> (x, y)
+let validPosInTile (ox, oy) (Tile (x, y, kind, _)) =
+    match kind with
+    | Block _ -> false
+    | _ ->
+        let realx, realy = x * tx, y * ty
+        ox >= realx && ox < realx + tx && oy >= realy && oy < realy + ty
+
+let nextPosition runState characterState (x, y) tiles =
+    let newPos = 
+        match characterState with
+        | Walking _ ->
+            if isAnyPressed leftKeys runState then (x - walkSpeed, y)
+            else if isAnyPressed rightKeys runState then (x + walkSpeed, y)
+            else if isAnyPressed upKeys runState then (x, y - walkSpeed)
+            else if isAnyPressed downKeys runState then (x, y + walkSpeed)
+            else (x, y)
+        | _ -> (x, y)
+    if List.exists (validPosInTile newPos) tiles then newPos else (x, y)
 
 let advanceGame runState worldState =
     match worldState with
@@ -72,6 +81,6 @@ let advanceGame runState worldState =
     | Some (Playing (map, state, facing, position)) -> 
         let newState = nextState runState state
         let newFacing = nextFacing runState newState facing
-        let newPosition = nextPosition runState newState position
+        let newPosition = nextPosition runState newState position map
         Playing (map, newState, newFacing, newPosition) |> Some
     | other -> other
