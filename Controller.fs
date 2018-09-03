@@ -8,54 +8,68 @@ open Microsoft.Xna.Framework.Input
 
 //let (dungeonSize, leafSize, roomSize) = 5, 5, 3
 let (dungeonSize, leafSize, roomSize) = 50, 8, 6
+let walkSpeed = 2
 
 let leftKeys = [Keys.Left;Keys.A]
 let rightKeys = [Keys.Right;Keys.D]
+let upKeys = [Keys.Up;Keys.W]
+let downKeys = [Keys.Down;Keys.S]
 let walkKeys = [Keys.Left;Keys.Right;Keys.Up;Keys.Down;Keys.A;Keys.D;Keys.W;Keys.S]
 
-let handleCharacterState runState state facing =
+let nextState runState state =
     let elapsed = runState.elapsed
     let animFinished start = elapsed - start >= 10. * frameSpeed
-    let newState = 
-        match state with
-        | _ when wasJustPressed Keys.R runState ->
-            Standing elapsed
-        | Dead -> 
-            Dead
-        | Dying start when animFinished start ->
-            Dead
-        | _ when wasJustPressed Keys.X runState -> 
-            Dying elapsed
-        | Standing _ when wasJustPressed Keys.C runState -> 
-            Gesturing elapsed
-        | Gesturing start when animFinished start ->
-            Standing elapsed
-        | Standing _ when isPressed Keys.F runState -> 
-            Striking elapsed
-        | Striking start when animFinished start ->
-            Standing elapsed
-        | Standing _ when isAnyPressed walkKeys runState -> 
-            Walking elapsed
-        | Walking _ when isAnyPressed walkKeys runState |> not -> 
-            Standing elapsed
-        | other -> other
-    let newFacing = 
-        match state with
-        | Standing _ | Walking _ ->
-            if isAnyPressed leftKeys runState then Left
-            else if isAnyPressed rightKeys runState then Right
-            else facing
-        | _ -> facing
-    CharacterRender (newState, newFacing) |> Some
-    
+    match state with
+    | _ when wasJustPressed Keys.R runState ->
+        Standing elapsed
+    | Dead -> 
+        Dead
+    | Dying start when animFinished start ->
+        Dead
+    | _ when wasJustPressed Keys.X runState -> 
+        Dying elapsed
+    | Standing _ when wasJustPressed Keys.C runState -> 
+        Gesturing elapsed
+    | Gesturing start when animFinished start ->
+        Standing elapsed
+    | Standing _ when isPressed Keys.F runState -> 
+        Striking elapsed
+    | Striking start when animFinished start ->
+        Standing elapsed
+    | Standing _ when isAnyPressed walkKeys runState -> 
+        Walking elapsed
+    | Walking _ when isAnyPressed walkKeys runState |> not -> 
+        Standing elapsed
+    | other -> other
+
+let nextFacing runState characterState facing = 
+    match characterState with
+    | Standing _ | Walking _ ->
+        if isAnyPressed leftKeys runState then Left
+        else if isAnyPressed rightKeys runState then Right
+        else facing
+    | _ -> facing
+
+let nextPosition runState characterState (x, y) =
+    match characterState with
+    | Walking _ ->
+        if isAnyPressed leftKeys runState then (x - walkSpeed, y)
+        else if isAnyPressed rightKeys runState then (x + walkSpeed, y)
+        else if isAnyPressed upKeys runState then (x, y - walkSpeed)
+        else if isAnyPressed downKeys runState then (x, y + walkSpeed)
+        else (x, y)
+    | _ -> (x, y)
 
 let advanceGame runState worldState =
     match worldState with
     | _ when wasJustPressed Keys.Escape runState -> None
-    | Some (MapView _) when wasJustPressed Keys.R runState ->
-        dungeon dungeonSize leafSize roomSize |> MapView |> Some
     | None -> 
-        dungeon dungeonSize leafSize roomSize |> MapView |> Some
-    //| None -> CharacterRender (Standing 0., Left) |> Some
-    | Some (CharacterRender (state, facing)) -> handleCharacterState runState state facing
+        let map = dungeon dungeonSize leafSize roomSize
+        let (state, facing, position) = (Standing 0., Left, (0, 0))
+        Playing (map, state, facing, position) |> Some
+    | Some (Playing (map, state, facing, position)) -> 
+        let newState = nextState runState state
+        let newFacing = nextFacing runState newState facing
+        let newPosition = nextPosition runState newState position
+        Playing (map, newState, newFacing, newPosition) |> Some
     | other -> other

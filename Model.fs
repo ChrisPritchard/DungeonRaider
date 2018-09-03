@@ -14,5 +14,4 @@ type CharacterState =
 type Facing = Left | Right
 
 type GameModel = 
-    | MapView of Tile list
-    | CharacterRender of CharacterState * Facing
+    | Playing of map:(Tile list) * state:CharacterState * facing:Facing * position:(int * int)

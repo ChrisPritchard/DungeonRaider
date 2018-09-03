@@ -5,6 +5,7 @@ open Model
 open Microsoft.Xna.Framework
 
 let screenWidth, screenHeight = 800, 800
+let (midx, midy) = screenWidth / 2, screenHeight / 2
 let (tx, ty) = 32, 32
 
 let resolution = Windowed (screenWidth, screenHeight)
@@ -52,21 +53,17 @@ let keyForAdjacency (adjacency : byte) kind index =
 let getView runState worldState =
     let elapsed = runState.elapsed
     match worldState with
-    | MapView map ->
+    | Playing (map, state, facing, (playerx, playery)) ->
         let blocks = 
             map 
             |> List.mapi (fun i (Tile (x, y, kind, adjacency)) -> 
+                let position = (midx + x*tx - playerx, midy + y*ty - playery, tx, ty)
                 match kind with
                 | Block -> 
-                    MappedImage ("dungeon", sprintf "ceiling_%s" (keyForAdjacency adjacency Block i), (x*tx,y*ty,tx,ty), Color.White)
+                    MappedImage ("dungeon", sprintf "ceiling_%s" (keyForAdjacency adjacency Block i), position, Color.White)
                 | other -> 
-                    MappedImage ("dungeon", sprintf "floor_%s" (keyForAdjacency adjacency other i), (x*tx,y*ty,tx,ty), Color.White))
-        blocks
-    | CharacterRender (state, facing) ->
+                    MappedImage ("dungeon", sprintf "floor_%s" (keyForAdjacency adjacency other i), position, Color.White))
         [
-            MappedImage ("cleric", frameFor elapsed state facing, (screenWidth / 2 - 64, screenHeight / 2 - 64 - 256, 128, 128), Color.White)
-            MappedImage ("ranger", frameFor elapsed state facing, (screenWidth / 2 - 64, screenHeight / 2 - 64 - 128, 128, 128), Color.White)
-            MappedImage ("rogue", frameFor elapsed state facing, (screenWidth / 2 - 64, screenHeight / 2 - 64, 128, 128), Color.White)
-            MappedImage ("warrior", frameFor elapsed state facing, (screenWidth / 2 - 64, screenHeight / 2 - 64 + 128, 128, 128), Color.White)
-            MappedImage ("wizard", frameFor elapsed state facing, (screenWidth / 2 - 64, screenHeight / 2 - 64 + 256, 128, 128), Color.White)
+            yield! blocks
+            yield MappedImage ("rogue", frameFor elapsed state facing, (midx - 64, midy - 64, 128, 128), Color.White)
         ]
