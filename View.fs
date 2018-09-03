@@ -7,7 +7,6 @@ open Microsoft.Xna.Framework
 let screenWidth, screenHeight = 800, 800
 let midx, midy = screenWidth / 2, screenHeight / 2
 let tx, ty = 128, 128
-let offsetx, offsety = tx / 2, ty / 4
 
 let resolution = Windowed (screenWidth, screenHeight)
 
@@ -58,7 +57,7 @@ let getView runState worldState =
         let blocks = 
             map 
             |> List.mapi (fun i (Tile (x, y, kind, adjacency)) -> 
-                let position = (midx + (x*tx) - playerx - offsetx, midy + (y*ty) - playery - offsety, tx, ty)
+                let position = (midx + (x*tx) - playerx - tx/2, midy + (y*ty) - playery, tx, ty)
                 match kind with
                 | Block -> 
                     MappedImage ("dungeon", sprintf "ceiling_%s" (keyForAdjacency adjacency Block i), position, Color.White)
