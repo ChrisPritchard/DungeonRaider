@@ -66,7 +66,7 @@ let isBlocked (playerx, playery) (Tile (x, y, kind, _)) =
         false
 
 let nextPosition runState characterState (x, y) tiles =
-    let newPos = 
+    let (nx, ny) = 
         match characterState with
         | Walking _ ->
             [
@@ -80,7 +80,10 @@ let nextPosition runState characterState (x, y) tiles =
                 else 
                     (rx, ry)) (x, y)
         | _ -> (x, y)
-    if List.exists (isBlocked newPos) tiles then (x, y) else newPos
+    let (bx, by) = tiles |> List.fold (fun (rx, ry) tile -> 
+        let (bx, by) = isBlocked (nx, y) tile, isBlocked (x, ny) tile
+        rx || bx, ry || by) (false, false)
+    (if bx then x else nx), (if by then y else ny)
 
 let advanceGame runState worldState =
     match worldState with
