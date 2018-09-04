@@ -55,7 +55,7 @@ let isBlocked (ox, oy) (Tile (x, y, kind, _)) =
     | Block _ -> 
         let realx, realy = x * tx, y * ty
         (ox >= realx && ox < realx + tx && oy >= realy && oy < realy + ty)
-        || (ox < realx && ox > realx + tx && oy < realy && oy > realy + ty)
+        || (ox < realx && ox + tx > realx && oy < realy && oy + ty > realy)
     | _ ->
         false
 
