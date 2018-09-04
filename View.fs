@@ -6,7 +6,7 @@ open Microsoft.Xna.Framework
 
 let screenWidth, screenHeight = 800, 800
 let midx, midy = screenWidth / 2, screenHeight / 2
-let tx, ty = 128, 128
+let tx, ty = 96, 96
 
 let resolution = Windowed (screenWidth, screenHeight)
 
