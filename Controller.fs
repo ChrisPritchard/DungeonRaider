@@ -9,6 +9,7 @@ open Microsoft.Xna.Framework.Input
 //let (dungeonSize, leafSize, roomSize) = 5, 5, 3
 let (dungeonSize, leafSize, roomSize) = 50, 8, 6
 let walkSpeed = tx / 16
+let boundaryx, boundaryy = tx/4, ty/3
 
 let leftKeys = [Keys.Left;Keys.A]
 let rightKeys = [Keys.Right;Keys.D]
@@ -54,8 +55,12 @@ let isBlocked (playerx, playery) (Tile (x, y, kind, _)) =
     match kind with
     | Block _ -> 
         let blockx, blocky = x * tx, y * ty
-        let isOnX = (playerx >= blockx && playerx < blockx + tx) || (playerx < blockx && playerx + tx > blockx)
-        let isOnY = (playery >= blocky && playery < blocky + ty) || (playery < blocky && playery + ty > blocky)
+        let isOnX = // right left
+            (playerx + boundaryx >= blockx && playerx + boundaryx < blockx + tx) 
+            || (playerx - boundaryx < blockx && playerx - boundaryx + tx > blockx)
+        let isOnY = // below above
+            (playery + boundaryy >= blocky && playery + boundaryy < blocky + ty) 
+            || (playery - boundaryy < blocky && playery - boundaryy + ty > blocky)
         isOnX && isOnY
     | _ ->
         false
