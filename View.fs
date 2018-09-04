@@ -50,17 +50,26 @@ let keyForAdjacency (adjacency : byte) kind index =
     | _ ->
         text
 
+//  128 64  32
+//  1       16
+//  2   4   8
+
 let wallFor adjacency index =
-    if adjacency &&& 4uy <> 4uy then
+    let has source check = source &&& check = check
+    let hasAny source checks = checks |> List.exists (fun check -> source &&& check = check)
+    if has adjacency 4uy |> not then
         None
-    else if adjacency &&& 1uy = 1uy && adjacency &&& 16uy = 16uy then
-        Some "wall_leftright"
-    else if adjacency &&& 1uy = 1uy then
-        Some "wall_left"
-    else if adjacency &&& 16uy = 16uy then
-        Some "wall_right"
     else
-        Some <| sprintf "wall_%i" (index % 4 + 1)
+        let hasLeft = has adjacency 1uy
+        let hasRight = has adjacency 16uy
+        if hasLeft && hasRight then
+            Some "wall_leftright"
+        else if hasLeft then
+            Some "wall_left"
+        else if hasRight then
+            Some "wall_right"
+        else
+            Some <| sprintf "wall_%i" (index % 4 + 1)
 
 let getView runState worldState =
     let elapsed = runState.elapsed
@@ -75,7 +84,7 @@ let getView runState worldState =
                     match wallFor adjacency i with
                     | Some wall -> 
                         [
-                            MappedImage ("dungeon", sprintf "ceiling_%s" (keyForAdjacency adjacency Block i), (ox,oy - ty*2,ow,oh), Color.White)
+                            //MappedImage ("dungeon", sprintf "ceiling_%s" (keyForAdjacency adjacency Block i), (ox,oy - ty*2,ow,oh), Color.White)
                             MappedImage ("dungeon", wall, (ox,oy - ty,ow,oh * 2), Color.White)
                         ]
                     | _ ->
