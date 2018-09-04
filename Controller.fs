@@ -6,8 +6,8 @@ open Bsp
 open View
 open Microsoft.Xna.Framework.Input
 
-let (dungeonSize, leafSize, roomSize) = 5, 5, 3
-//let (dungeonSize, leafSize, roomSize) = 40, 6, 4
+//let (dungeonSize, leafSize, roomSize) = 5, 5, 3
+let (dungeonSize, leafSize, roomSize) = 40, 6, 3
 let walkSpeed = tx / 16
 let boundaryx, boundaryy = tx/4, ty/3
 

@@ -51,13 +51,13 @@ let keyForAdjacency (adjacency : byte) kind index =
         text
 
 let wallFor adjacency index =
-    if adjacency &&& 32uy <> 32uy then
+    if adjacency &&& 4uy <> 4uy then
         None
-    else if adjacency &&& 128uy = 128uy && adjacency &&& 8uy = 8uy then
+    else if adjacency &&& 1uy = 1uy && adjacency &&& 16uy = 16uy then
         Some "wall_leftright"
-    else if adjacency &&& 128uy = 128uy then
+    else if adjacency &&& 1uy = 1uy then
         Some "wall_left"
-    else if adjacency &&& 8uy = 8uy then
+    else if adjacency &&& 16uy = 16uy then
         Some "wall_right"
     else
         Some <| sprintf "wall_%i" (index % 4 + 1)
