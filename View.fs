@@ -21,7 +21,7 @@ let assetsToLoad = [
     TextureMap ("wizard", "./Content/Sprites/wizard.png", "./Content/Sprites/standard-key.csv")
 ]
 
-let frameSpeed = 150.
+let frameSpeed = 75.
 
 let frameFor elapsed state facing = 
     let frameFor start = (((elapsed - start) % (10. * frameSpeed)) / frameSpeed) + 1. |> floor |> int
