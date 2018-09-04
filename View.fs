@@ -51,7 +51,16 @@ let keyForAdjacency (adjacency : byte) kind index =
         text
 
 let wallFor adjacency index =
-    None
+    if adjacency &&& 32uy <> 32uy then
+        None
+    else if adjacency &&& 128uy = 128uy && adjacency &&& 8uy = 8uy then
+        None // TODO both ends
+    else if adjacency &&& 128uy = 128uy then
+        None // TODO left end
+    else if adjacency &&& 8uy = 8uy then
+        None // TODO right end
+    else
+        None // TODO mid wall
 
 let getView runState worldState =
     let elapsed = runState.elapsed
