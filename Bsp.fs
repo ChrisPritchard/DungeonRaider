@@ -84,19 +84,20 @@ let tryFindCorridorBetween partitionType (Range (kind1, x1, y1, w1, h1)) (Range 
 let pairs sequence1 sequence2 = 
     sequence1 |> Seq.collect (fun item1 -> sequence2 |> Seq.map (fun item2 -> (item1, item2)))
 
-let rec joined bspResult = 
+let rec joined minCorridorLength bspResult = 
     seq {
         match bspResult with
         | Leaf room -> yield room
         | Partition (partitionType, bspRes1, bspRes2) ->
-            let spaces1 = joined bspRes1
-            let spaces2 = joined bspRes2
+            let spaces1 = joined minCorridorLength bspRes1
+            let spaces2 = joined minCorridorLength bspRes2
 
             let corridor = 
                 pairs spaces1 spaces2 
                 |> Seq.map (fun (space1, space2) -> 
                     tryFindCorridorBetween partitionType space1 space2)
                 |> Seq.choose id 
+                |> Seq.filter (fun (_, length) -> length >= minCorridorLength)
                 |> Seq.sortBy (fun (_, length) -> length) 
                 |> Seq.tryHead
 
@@ -105,9 +106,9 @@ let rec joined bspResult =
             yield! spaces2
     } |> Seq.toList
 
-let dungeon maxSize minLeafSize minRoomSize = 
+let dungeon maxSize minLeafSize minRoomSize minCorridorLength = 
     let rooms = bspRooms minLeafSize minRoomSize (Range (None, 0, 0, maxSize, maxSize))
-    let allOpen = joined rooms
+    let allOpen = joined minCorridorLength rooms
     
     let inRange (ox, oy) (Range (kindOption, x, y, width, height)) =
         match kindOption with

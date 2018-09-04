@@ -6,8 +6,8 @@ open Bsp
 open View
 open Microsoft.Xna.Framework.Input
 
-//let (dungeonSize, leafSize, roomSize) = 5, 5, 3
-let (dungeonSize, leafSize, roomSize) = 50, 8, 5
+//let (dungeonSize, leafSize, roomSize, minCorridorLength) = 5, 5, 3, 3
+let (dungeonSize, leafSize, roomSize, minCorridorLength) = 50, 10, 5, 3
 let walkSpeed = tx / 16
 let boundaryx, boundaryy = tx/4, ty/3
 
@@ -89,7 +89,7 @@ let advanceGame runState worldState =
     match worldState with
     | _ when wasJustPressed Keys.Escape runState -> None
     | None -> 
-        let map = dungeon dungeonSize leafSize roomSize
+        let map = dungeon dungeonSize leafSize roomSize minCorridorLength
         let position = map |> List.pick (fun (Tile (x, y, kind, _)) -> 
             match kind with Block _ -> None | _ -> Some (x*tx, y*ty))
         let (state, facing, position) = (Standing 0., Left, position)
