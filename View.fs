@@ -54,13 +54,13 @@ let wallFor adjacency index =
     if adjacency &&& 32uy <> 32uy then
         None
     else if adjacency &&& 128uy = 128uy && adjacency &&& 8uy = 8uy then
-        None // TODO both ends
+        Some "wall_leftright"
     else if adjacency &&& 128uy = 128uy then
-        None // TODO left end
+        Some "wall_left"
     else if adjacency &&& 8uy = 8uy then
-        None // TODO right end
+        Some "wall_right"
     else
-        None // TODO mid wall
+        Some <| sprintf "wall_%i" (index % 4 + 1)
 
 let getView runState worldState =
     let elapsed = runState.elapsed
