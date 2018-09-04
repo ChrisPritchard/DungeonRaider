@@ -83,15 +83,12 @@ let getView runState worldState =
                 | Block -> 
                     match wallFor adjacency i with
                     | Some wall -> 
-                        [
-                            //MappedImage ("dungeon", sprintf "ceiling_%s" (keyForAdjacency adjacency Block i), (ox,oy - ty*2,ow,oh), Color.White)
-                            MappedImage ("dungeon", wall, (ox,oy - ty,ow,oh * 2), Color.White)
-                        ]
+                        MappedImage ("dungeon", wall, (ox,oy - ty,ow,oh * 2), Color.White)
                     | _ ->
-                        [MappedImage ("dungeon", sprintf "ceiling_%s" (keyForAdjacency adjacency Block i), (ox,oy,ow,oh), Color.White)]
+                        MappedImage ("dungeon", sprintf "ceiling_%s" (keyForAdjacency adjacency Block i), (ox,oy,ow,oh), Color.White)
                 | other -> 
-                    [MappedImage ("dungeon", sprintf "floor_%s" (keyForAdjacency adjacency other i), (ox,oy,ow,oh), Color.White)])
+                    MappedImage ("dungeon", sprintf "floor_%s" (keyForAdjacency adjacency other i), (ox,oy,ow,oh), Color.White))
         [
-            yield! List.concat blocks
+            yield! blocks
             yield MappedImage ("rogue", frameFor elapsed state facing, (midx - tx/2, midy - tx/2, tx, ty), Color.White)
         ]
