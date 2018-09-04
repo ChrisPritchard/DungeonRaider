@@ -50,6 +50,9 @@ let keyForAdjacency (adjacency : byte) kind index =
     | _ ->
         text
 
+let wallFor adjacency index =
+    None
+
 let getView runState worldState =
     let elapsed = runState.elapsed
     match worldState with
@@ -57,13 +60,20 @@ let getView runState worldState =
         let blocks = 
             map 
             |> List.mapi (fun i (Tile (x, y, kind, adjacency)) -> 
-                let position = (midx + (x*tx) - playerx - tx/2, midy + (y*ty) - playery, tx, ty)
+                let (ox,oy,ow,oh) = (midx + (x*tx) - playerx - tx/2, midy + (y*ty) - playery, tx, ty)
                 match kind with
                 | Block -> 
-                    MappedImage ("dungeon", sprintf "ceiling_%s" (keyForAdjacency adjacency Block i), position, Color.White)
+                    match wallFor adjacency i with
+                    | Some wall -> 
+                        [
+                            MappedImage ("dungeon", sprintf "ceiling_%s" (keyForAdjacency adjacency Block i), (ox,oy - ty*2,ow,oh), Color.White)
+                            MappedImage ("dungeon", wall, (ox,oy - ty,ow,oh * 2), Color.White)
+                        ]
+                    | _ ->
+                        [MappedImage ("dungeon", sprintf "ceiling_%s" (keyForAdjacency adjacency Block i), (ox,oy,ow,oh), Color.White)]
                 | other -> 
-                    MappedImage ("dungeon", sprintf "floor_%s" (keyForAdjacency adjacency other i), position, Color.White))
+                    [MappedImage ("dungeon", sprintf "floor_%s" (keyForAdjacency adjacency other i), (ox,oy,ow,oh), Color.White)])
         [
-            yield! blocks
+            yield! List.concat blocks
             yield MappedImage ("rogue", frameFor elapsed state facing, (midx - tx/2, midy - tx/2, tx, ty), Color.White)
         ]
