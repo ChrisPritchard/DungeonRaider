@@ -50,12 +50,13 @@ let nextFacing runState characterState facing =
         else facing
     | _ -> facing
 
-let isBlocked (ox, oy) (Tile (x, y, kind, _)) =
+let isBlocked (playerx, playery) (Tile (x, y, kind, _)) =
     match kind with
     | Block _ -> 
-        let realx, realy = x * tx, y * ty
-        (ox >= realx && ox < realx + tx && oy >= realy && oy < realy + ty)
-        || (ox < realx && ox + tx > realx && oy < realy && oy + ty > realy)
+        let blockx, blocky = x * tx, y * ty
+        let isOnX = (playerx >= blockx && playerx < blockx + tx) || (playerx < blockx && playerx + tx > blockx)
+        let isOnY = (playery >= blocky && playery < blocky + ty) || (playery < blocky && playery + ty > blocky)
+        isOnX && isOnY
     | _ ->
         false
 
