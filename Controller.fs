@@ -50,12 +50,14 @@ let nextFacing runState characterState facing =
         else facing
     | _ -> facing
 
-let validPosInTile (ox, oy) (Tile (x, y, kind, _)) =
+let isBlocked (ox, oy) (Tile (x, y, kind, _)) =
     match kind with
-    | Block _ -> false
-    | _ ->
+    | Block _ -> 
         let realx, realy = x * tx, y * ty
-        ox >= realx && ox < realx + tx && oy >= realy && oy < realy + ty
+        (ox >= realx && ox < realx + tx && oy >= realy && oy < realy + ty)
+        || (ox < realx && ox > realx + tx && oy < realy && oy > realy + ty)
+    | _ ->
+        false
 
 let nextPosition runState characterState (x, y) tiles =
     let newPos = 
@@ -72,7 +74,7 @@ let nextPosition runState characterState (x, y) tiles =
                 else 
                     (rx, ry)) (x, y)
         | _ -> (x, y)
-    if List.exists (validPosInTile newPos) tiles then newPos else (x, y)
+    if List.exists (isBlocked newPos) tiles then (x, y) else newPos
 
 let advanceGame runState worldState =
     match worldState with
