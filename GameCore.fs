@@ -209,7 +209,15 @@ type GameLoop<'TModel> (resolution, assetsToLoad, updateModel, getView)
         
         spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp)
 
+        let isVisible (x, y, w, h) = 
+            x + w > 0 && x < graphics.PreferredBackBufferWidth
+            && y + h > 0 && y < graphics.PreferredBackBufferHeight 
         currentView
+            |> List.filter (
+                function 
+                | Image (_,d,_) -> isVisible d
+                | MappedImage (_,_,d,_) -> isVisible d
+                | _ -> true)
             |> List.iter (
                 function 
                 | Image (a,d,c) -> drawImage spriteBatch (a,d) c
