@@ -6,7 +6,7 @@ open Microsoft.Xna.Framework
 
 let screenWidth, screenHeight = 800, 800
 let midx, midy = screenWidth / 2, screenHeight / 2
-let tx, ty = 64, 64
+let tx, ty = 32, 32
 let pw, ph = tx * 3/2, ty * 3/2
 
 let resolution = Windowed (screenWidth, screenHeight)
@@ -79,16 +79,20 @@ let getView runState worldState =
         let blocks = 
             map 
             |> List.mapi (fun i (Tile (x, y, kind, adjacency)) -> 
-                let (ox,oy,ow,oh) = (midx + (x*tx) - playerx - tx/2, midy + (y*ty) - playery, tx, ty)
+                let rx, ry = midx + (x*tx) - playerx - tx/2, midy + (y*ty) - playery
+                i, kind, adjacency, rx, ry)
+            |> List.filter (fun (_, _, _, rx, ry) -> 
+                rx + tx > 0 && rx < screenWidth && ry + ty > 0 && ry - ty < screenWidth)
+            |> List.map (fun (i, kind, adjacency, rx, ry) -> 
                 match kind with
                 | Block -> 
                     match wallFor adjacency i with
                     | Some wall -> 
-                        MappedImage ("dungeon", wall, (ox,oy - ty,ow,oh * 2), Color.White)
+                        MappedImage ("dungeon", wall, (rx, ry - ty, tx, ty * 2), Color.White)
                     | _ ->
-                        MappedImage ("dungeon", sprintf "ceiling_%s" (keyForAdjacency adjacency Block i), (ox,oy,ow,oh), Color.White)
+                        MappedImage ("dungeon", sprintf "ceiling_%s" (keyForAdjacency adjacency Block i), (rx, ry, tx, ty), Color.White)
                 | other -> 
-                    MappedImage ("dungeon", sprintf "floor_%s" (keyForAdjacency adjacency other i), (ox,oy,ow,oh), Color.White))
+                    MappedImage ("dungeon", sprintf "floor_%s" (keyForAdjacency adjacency other i), (rx, ry, tx, ty), Color.White))
         [
             yield! blocks
             yield MappedImage ("rogue", frameFor elapsed state facing, (midx - pw/2, midy - ph/2, pw, ph), Color.White)
