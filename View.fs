@@ -1,13 +1,9 @@
 module View
 
 open GameCore
+open Constants
 open Model
 open Microsoft.Xna.Framework
-
-let screenWidth, screenHeight = 800, 800
-let midx, midy = screenWidth / 2, screenHeight / 2
-let tx, ty = 32, 32
-let pw, ph = tx * 3/2, ty * 3/2
 
 let resolution = Windowed (screenWidth, screenHeight)
 
@@ -21,8 +17,6 @@ let assetsToLoad = [
     TextureMap ("warrior", "./Content/Sprites/warrior.png", "./Content/Sprites/standard-key.csv")
     TextureMap ("wizard", "./Content/Sprites/wizard.png", "./Content/Sprites/standard-key.csv")
 ]
-
-let frameSpeed = 75.
 
 let frameFor elapsed state facing = 
     let frameFor start = (((elapsed - start) % (10. * frameSpeed)) / frameSpeed) + 1. |> floor |> int
@@ -50,10 +44,6 @@ let keyForAdjacency (adjacency : byte) kind index =
         sprintf "%s_%i" text (index % 2 + 1)
     | _ ->
         text
-
-//  128 64  32
-//  1       16
-//  2   4   8
 
 let wallFor adjacency index =
     let has source check = source &&& check = check

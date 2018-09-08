@@ -6,6 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="Constants.fs" />
     <Compile Include="GameCore.fs" />
     <Compile Include="Model.fs" />
     <Compile Include="Adjacency.fs" />

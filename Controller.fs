@@ -3,37 +3,25 @@ module Controller
 open GameCore
 open Model
 open Bsp
-open View
-open Microsoft.Xna.Framework.Input
-
-//let (dungeonSize, leafSize, roomSize, minCorridorLength) = 5, 5, 3, 3
-let (dungeonSize, leafSize, roomSize, minCorridorLength) = 50, 10, 5, 3
-let walkSpeed = tx / 16
-let boundaryx, boundaryy = pw/8, ph/8
-
-let leftKeys = [Keys.Left;Keys.A]
-let rightKeys = [Keys.Right;Keys.D]
-let upKeys = [Keys.Up;Keys.W]
-let downKeys = [Keys.Down;Keys.S]
-let walkKeys = [Keys.Left;Keys.Right;Keys.Up;Keys.Down;Keys.A;Keys.D;Keys.W;Keys.S]
+open Constants
 
 let nextState runState state =
     let elapsed = runState.elapsed
     let animFinished start = elapsed - start >= 10. * frameSpeed
     match state with
-    | _ when wasJustPressed Keys.R runState ->
+    | _ when wasJustPressed resetKey runState ->
         Standing elapsed
     | Dead -> 
         Dead
     | Dying start when animFinished start ->
         Dead
-    | _ when wasJustPressed Keys.X runState -> 
+    | _ when wasJustPressed deathKey runState -> 
         Dying elapsed
-    | Standing _ when wasJustPressed Keys.C runState -> 
+    | Standing _ when wasJustPressed gestureKey runState -> 
         Gesturing elapsed
     | Gesturing start when animFinished start ->
         Standing elapsed
-    | Standing _ when isPressed Keys.F runState -> 
+    | Standing _ when isPressed strikeKey runState -> 
         Striking elapsed
     | Striking start when animFinished start ->
         Standing elapsed
@@ -87,7 +75,7 @@ let nextPosition runState characterState (x, y) tiles =
 
 let advanceGame runState worldState =
     match worldState with
-    | _ when wasJustPressed Keys.Escape runState -> None
+    | _ when wasJustPressed quitKey runState -> None
     | None -> 
         let map = dungeon dungeonSize leafSize roomSize minCorridorLength
         let position = map |> List.pick (fun (Tile (x, y, kind, _)) -> 
