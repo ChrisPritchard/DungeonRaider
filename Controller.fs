@@ -9,7 +9,7 @@ open Microsoft.Xna.Framework.Input
 //let (dungeonSize, leafSize, roomSize, minCorridorLength) = 5, 5, 3, 3
 let (dungeonSize, leafSize, roomSize, minCorridorLength) = 50, 10, 5, 3
 let walkSpeed = tx / 16
-let boundaryx, boundaryy = tx/4, ty/3
+let boundaryx, boundaryy = pw/8, ph/8
 
 let leftKeys = [Keys.Left;Keys.A]
 let rightKeys = [Keys.Right;Keys.D]

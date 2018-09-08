@@ -7,6 +7,7 @@ open Microsoft.Xna.Framework
 let screenWidth, screenHeight = 800, 800
 let midx, midy = screenWidth / 2, screenHeight / 2
 let tx, ty = 96, 96
+let pw, ph = tx * 3/2, ty * 3/2
 
 let resolution = Windowed (screenWidth, screenHeight)
 
@@ -90,5 +91,5 @@ let getView runState worldState =
                     MappedImage ("dungeon", sprintf "floor_%s" (keyForAdjacency adjacency other i), (ox,oy,ow,oh), Color.White))
         [
             yield! blocks
-            yield MappedImage ("rogue", frameFor elapsed state facing, (midx - tx/2, midy - tx/2, tx, ty), Color.White)
+            yield MappedImage ("rogue", frameFor elapsed state facing, (midx - pw/2, midy - ph/2, pw, ph), Color.White)
         ]
