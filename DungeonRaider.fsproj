@@ -17,6 +17,7 @@
 
   <!-- Stuff outside the content pipeline - loaded directly -->
   <ItemGroup>
+    <None Include="Content\white.png" CopyToOutputDirectory="PreserveNewest" />
     <None Include="Content\Sprites\dungeon.png" CopyToOutputDirectory="PreserveNewest" />
     <None Include="Content\Sprites\cleric.png" CopyToOutputDirectory="PreserveNewest" />
     <None Include="Content\Sprites\goblin.png" CopyToOutputDirectory="PreserveNewest" />
@@ -30,6 +31,8 @@
     <None Include="Content\Sprites\snake.png" CopyToOutputDirectory="PreserveNewest" />
     <None Include="Content\Sprites\warrior.png" CopyToOutputDirectory="PreserveNewest" />
     <None Include="Content\Sprites\wizard.png" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="Content\Sprites\standard-key.csv" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="Content\Sprites\dungeon-key.csv" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
     
   <!-- Processed by content pipeline on build into xnb files -->
