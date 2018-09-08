@@ -53,7 +53,7 @@ let wasAnyJustPressed keyList runState = keyList |> List.exists (fun k -> wasJus
 let isPressed key runState = List.contains key runState.keyboard.pressed
 let isAnyPressed keyList runState = keyList |> List.exists (fun k -> isPressed k runState)
 
-type GameLoop<'TModel> (resolution, assetsToLoad, updateModel, getView)
+type GameLoop<'TModel> (resolution, assetsToLoad, updateModel, getView, showFps)
     as this = 
     inherit Game()
 
@@ -66,6 +66,10 @@ type GameLoop<'TModel> (resolution, assetsToLoad, updateModel, getView)
     let mutable currentView: ViewArtifact list = []
     let mutable currentSong: Song option = None
     let mutable firstDrawComplete = false
+
+    let mutable fps = 0
+    let mutable drawCount = 0
+    let mutable drawCountStart = 0.
 
     let mutable spriteBatch = Unchecked.defaultof<SpriteBatch>
 
@@ -155,6 +159,16 @@ type GameLoop<'TModel> (resolution, assetsToLoad, updateModel, getView)
             MediaPlayer.Play (song)
             MediaPlayer.IsRepeating <- true
 
+    let updateAndPrintFPS (gameTime : GameTime) = 
+        if gameTime.TotalGameTime.TotalMilliseconds - drawCountStart > 1000. then
+            fps <- drawCount
+            drawCountStart <- gameTime.TotalGameTime.TotalMilliseconds
+            drawCount <- 0
+        else
+            drawCount <- drawCount + 1
+        Console.CursorLeft <- 0
+        printf "FPS: %i" fps
+
     override __.LoadContent() = 
         spriteBatch <- new SpriteBatch(this.GraphicsDevice)
         assets <- 
@@ -203,7 +217,7 @@ type GameLoop<'TModel> (resolution, assetsToLoad, updateModel, getView)
         | Some model ->
             currentView <- getView runState model
 
-    override __.Draw(_) =
+    override __.Draw(gameTime) =
         firstDrawComplete <- true
         this.GraphicsDevice.Clear Color.Black
         
@@ -227,3 +241,6 @@ type GameLoop<'TModel> (resolution, assetsToLoad, updateModel, getView)
                 | Music s -> playMusic s)
 
         spriteBatch.End()
+
+        if showFps then
+            updateAndPrintFPS gameTime
