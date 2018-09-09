@@ -23,6 +23,8 @@ let nextState runState state =
         Standing elapsed
     | Standing _ when isPressed strikeKey runState -> 
         Striking elapsed
+    | Walking _ when isPressed strikeKey runState -> 
+        Striking elapsed
     | Striking start when animFinished start ->
         Standing elapsed
     | Standing _ when isAnyPressed walkKeys runState -> 

@@ -7,6 +7,6 @@ let main _ =
             View.assetsToLoad, 
             Controller.advanceGame, 
             View.getView, 
-            true)
+            false)
     game.Run ()
     0
