@@ -14,4 +14,4 @@ type CharacterState =
 type Facing = Left | Right
 
 type GameModel = 
-    | Playing of map:(Tile list) * state:CharacterState * facing:Facing * position:(int * int)
+    | Playing of map:(Tile list) * state:CharacterState * facing:Facing * position:(float * float)

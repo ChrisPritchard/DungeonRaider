@@ -43,13 +43,13 @@ let nextFacing runState characterState facing =
 
 let isBlocked (playerx, playery) (Tile (x, y, kind, _)) =
     let checkBlock () =
-        let blockx, blocky = x * tx, y * ty
+        let blockx, blocky = x * tx |> float, y * ty |> float
         let isOnX =
-            (playerx - boundaryx >= blockx && playerx - boundaryx < blockx + tx) // block is left
-            || (playerx + boundaryx < blockx + tx && playerx + boundaryx >= blockx) // block is right
+            (playerx - boundaryx >= blockx && playerx - boundaryx < blockx + float tx) // block is left
+            || (playerx + boundaryx < blockx + float tx && playerx + boundaryx >= blockx) // block is right
         let isOnY =
-            (playery - boundaryyup >= blocky && playery - boundaryyup < blocky + ty) // block is above
-            || (playery + boundaryydown < blocky + ty && playery + boundaryydown >= blocky) // block is below
+            (playery - boundaryyup >= blocky && playery - boundaryyup < blocky + float ty) // block is above
+            || (playery + boundaryydown < blocky + float ty && playery + boundaryydown >= blocky) // block is below
         isOnX && isOnY
     match kind with
     | Block _ | StairsUp | StairsDown 1 -> 
@@ -70,10 +70,10 @@ let nextPosition runState characterState (x, y) tiles =
         match characterState with
         | Walking _ ->
             [
-                leftKeys, -walkSpeed, 0
-                rightKeys, walkSpeed, 0
-                upKeys, 0, -walkSpeed
-                downKeys, 0, walkSpeed
+                leftKeys, -walkSpeed, 0.
+                rightKeys, walkSpeed, 0.
+                upKeys, 0., -walkSpeed
+                downKeys, 0., walkSpeed
             ] |> List.fold (fun (rx, ry) (keys, dx, dy) -> 
                 if isAnyPressed keys runState then 
                     (rx + dx, ry + dy) 
@@ -85,13 +85,21 @@ let nextPosition runState characterState (x, y) tiles =
         rx || bx, ry || by) (false, false)
     (if bx then x else nx), (if by then y else ny)
 
+let startPos = 
+    List.pick (fun (Tile (x, y, kind, _)) -> 
+        match kind with 
+            | StairsUp -> 
+                Some (
+                    x*tx + tx/2 |> float, 
+                    (y+1)*ty + ty/2 |> float) 
+            | _ -> None)
+
 let advanceGame runState worldState =
     match worldState with
     | _ when wasJustPressed quitKey runState -> None
     | None -> 
         let map = dungeon dungeonSize leafSize roomSize minCorridorLength
-        let position = map |> List.pick (fun (Tile (x, y, kind, _)) -> 
-            match kind with StairsUp -> Some (x*tx + tx/2, (y+1)*ty + ty/2) | _ -> None)
+        let position = startPos map
         let (state, facing, position) = (Standing 0., Left, position)
         Playing (map, state, facing, position) |> Some
     | Some (Playing (map, state, facing, position)) -> 
