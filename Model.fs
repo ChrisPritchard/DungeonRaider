@@ -1,7 +1,7 @@
 module Model
 
 type Tile = Tile of x:int * y:int * kind:TileKind * adjacency:byte
-and TileKind = Room | Door | Corridor | Block | StairsUp | StairsDown
+and TileKind = Room | Door | Corridor | Block | StairsUp | StairsDown of int
 
 type CharacterState =
     | Standing of startTime:float 

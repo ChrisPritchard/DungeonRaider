@@ -41,9 +41,8 @@ let nextFacing runState characterState facing =
         else facing
     | _ -> facing
 
-let isBlocked (playerx, playery) (Tile (x, y, kind, _)) =
-    match kind with
-    | Block _ | StairsUp -> 
+let isBlocked (playerx, playery) startTileKind (Tile (x, y, kind, _)) =
+    let checkBlock () =
         let blockx, blocky = x * tx, y * ty
         let isOnX = // right left
             (playerx + boundaryx >= blockx && playerx + boundaryx < blockx + tx) 
@@ -52,8 +51,20 @@ let isBlocked (playerx, playery) (Tile (x, y, kind, _)) =
             (playery + boundaryy >= blocky && playery + boundaryy < blocky + ty) 
             || (playery - boundaryy < blocky && playery - boundaryy + ty > blocky)
         isOnX && isOnY
+    match kind, startTileKind with
+    | StairsDown 3, StairsDown _ -> false
+    | Block _, _ | StairsUp, _ | StairsDown 1, _ | StairsDown 3, _ -> 
+        checkBlock ()
     | _ ->
         false
+
+let getTileKind (x, y) =
+    List.find (fun (Tile (ox, oy, _, _)) -> 
+        ox * tx <= x && 
+        ox * tx + tx > x && 
+        oy * ty <= y && 
+        oy * ty + ty > y)
+    >> fun (Tile (_, _, kind, _)) -> kind
 
 let nextPosition runState characterState (x, y) tiles =
     let (nx, ny) = 
@@ -70,8 +81,9 @@ let nextPosition runState characterState (x, y) tiles =
                 else 
                     (rx, ry)) (x, y)
         | _ -> (x, y)
+    let playerTile = getTileKind (x, y) tiles        
     let (bx, by) = tiles |> List.fold (fun (rx, ry) tile -> 
-        let (bx, by) = isBlocked (nx, y) tile, isBlocked (x, ny) tile
+        let (bx, by) = isBlocked (nx, y) playerTile tile, isBlocked (x, ny) playerTile tile
         rx || bx, ry || by) (false, false)
     (if bx then x else nx), (if by then y else ny)
 

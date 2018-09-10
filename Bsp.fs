@@ -116,7 +116,12 @@ let stairs bspResult =
         match bspResult with
         | (Partition (_, left, right)) -> crawler left right
         | (Leaf room) -> room, room
-    (sx, sy - 1), (ex + ew, ey + eh)
+    (sx, sy - 1), [
+            yield (ex + ew - 2, ey + eh - 2)
+            yield (ex + ew - 1, ey + eh - 2)
+            yield (ex + ew - 1, ey + eh - 1)
+            yield (ex + ew - 2, ey + eh - 1)
+        ]
 
 let dungeon maxSize minLeafSize minRoomSize minCorridorLength = 
     let rooms = bspRooms minLeafSize minRoomSize (Range (None, 0, 0, maxSize, maxSize))
@@ -134,7 +139,7 @@ let dungeon maxSize minLeafSize minRoomSize minCorridorLength =
         [0..maxSize - 1] |> List.map (fun y -> 
             match (x, y) with
             | p when p = stairsUp -> Tile (x, y, StairsUp, 0uy)
-            | p when p = stairsDown -> Tile (x, y, StairsDown, 0uy)
+            | p when List.contains p stairsDown -> Tile (x, y, StairsDown (List.findIndex ((=) p) stairsDown), 0uy)
             | _ ->
                 let inRange = List.tryFind (inRange (x, y)) allOpen
                 let kind = 
