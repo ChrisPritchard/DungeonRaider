@@ -45,11 +45,11 @@ let isBlocked (playerx, playery) (Tile (x, y, kind, _)) =
     let checkBlock () =
         let blockx, blocky = x * tx, y * ty
         let isOnX =
-            (playerx >= blockx && playerx < blockx + tx) // block is left
-            || (playerx < blockx + tx && playerx >= blockx) // block is right
+            (playerx - boundaryx >= blockx && playerx - boundaryx < blockx + tx) // block is left
+            || (playerx + boundaryx < blockx + tx && playerx + boundaryx >= blockx) // block is right
         let isOnY =
-            (playery >= blocky && playery < blocky + ty) // block is above
-            || (playery < blocky + ty && playery >= blocky) // block is below
+            (playery - boundaryyup >= blocky && playery - boundaryyup < blocky + ty) // block is above
+            || (playery + boundaryydown < blocky + ty && playery + boundaryydown >= blocky) // block is below
         isOnX && isOnY
     match kind with
     | Block _ | StairsUp | StairsDown 1 -> 
@@ -91,7 +91,7 @@ let advanceGame runState worldState =
     | None -> 
         let map = dungeon dungeonSize leafSize roomSize minCorridorLength
         let position = map |> List.pick (fun (Tile (x, y, kind, _)) -> 
-            match kind with StairsUp -> Some (x*tx, (y+1)*ty) | _ -> None)
+            match kind with StairsUp -> Some (x*tx + tx/2, (y+1)*ty + ty/2) | _ -> None)
         let (state, facing, position) = (Standing 0., Left, position)
         Playing (map, state, facing, position) |> Some
     | Some (Playing (map, state, facing, position)) -> 

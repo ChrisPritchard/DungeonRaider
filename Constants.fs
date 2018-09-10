@@ -14,7 +14,7 @@ let pw, ph = tx * 3/2, ty * 3/2
 let frameSpeed = 75.
 let walkSpeed = tx / 16
 // player jiggle
-let boundaryx, boundaryy = pw/4, ph/8
+let boundaryx, boundaryyup, boundaryydown = pw/4, ph/8, ph/16
 
 let quitKey = Keys.Escape
 let leftKeys = [Keys.Left;Keys.A]
