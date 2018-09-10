@@ -43,7 +43,7 @@ let nextFacing runState characterState facing =
 
 let isBlocked (playerx, playery) (Tile (x, y, kind, _)) =
     match kind with
-    | Block _ -> 
+    | Block _ | StairsUp -> 
         let blockx, blocky = x * tx, y * ty
         let isOnX = // right left
             (playerx + boundaryx >= blockx && playerx + boundaryx < blockx + tx) 
@@ -81,7 +81,7 @@ let advanceGame runState worldState =
     | None -> 
         let map = dungeon dungeonSize leafSize roomSize minCorridorLength
         let position = map |> List.pick (fun (Tile (x, y, kind, _)) -> 
-            match kind with Block _ -> None | _ -> Some (x*tx, y*ty))
+            match kind with StairsUp -> Some (x*tx, (y+1)*ty) | _ -> None)
         let (state, facing, position) = (Standing 0., Left, position)
         Playing (map, state, facing, position) |> Some
     | Some (Playing (map, state, facing, position)) -> 

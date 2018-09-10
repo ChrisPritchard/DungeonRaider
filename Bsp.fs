@@ -106,8 +106,21 @@ let rec joined minCorridorLength bspResult =
             yield! spaces2
     } |> Seq.toList
 
+let stairs bspResult = 
+    let rec crawler leftResult rightResult =
+        match leftResult, rightResult with
+        | (Leaf left), (Leaf right) -> left, right  
+        | (Partition (_, left, _)), right -> crawler left right
+        | left, (Partition (_, _, right)) -> crawler left right
+    let (Range (_, sx,sy,_,_)), (Range (_, ex,ey,ew,eh)) = 
+        match bspResult with
+        | (Partition (_, left, right)) -> crawler left right
+        | (Leaf room) -> room, room
+    (sx, sy - 1), (ex + ew, ey + eh)
+
 let dungeon maxSize minLeafSize minRoomSize minCorridorLength = 
     let rooms = bspRooms minLeafSize minRoomSize (Range (None, 0, 0, maxSize, maxSize))
+    let stairsUp, stairsDown = stairs rooms
     let allOpen = joined minCorridorLength rooms
     
     let inRange (ox, oy) (Range (kindOption, x, y, width, height)) =
@@ -119,9 +132,16 @@ let dungeon maxSize minLeafSize minRoomSize minCorridorLength =
     let tiles = 
         [0..maxSize - 1] |> List.collect (fun x -> 
         [0..maxSize - 1] |> List.map (fun y -> 
-            let inRange = List.tryFind (inRange (x, y)) allOpen
-            let kind = match inRange with | Some (Range ((Some kind), _, _, _, _)) -> kind | _ -> Block
-            Tile (x, y, kind, 0uy)))
+            match (x, y) with
+            | p when p = stairsUp -> Tile (x, y, StairsUp, 0uy)
+            | p when p = stairsDown -> Tile (x, y, StairsDown, 0uy)
+            | _ ->
+                let inRange = List.tryFind (inRange (x, y)) allOpen
+                let kind = 
+                    match inRange with 
+                    | Some (Range ((Some kind), _, _, _, _)) -> kind 
+                    | _ -> Block
+                Tile (x, y, kind, 0uy)))
 
     tiles |> List.map (fun (Tile (x, y, kind, _)) -> 
         let adjacency = 
