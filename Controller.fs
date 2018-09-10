@@ -57,14 +57,6 @@ let isBlocked (playerx, playery) (Tile (x, y, kind, _)) =
     | _ ->
         false
 
-let getTileKind (x, y) =
-    List.find (fun (Tile (ox, oy, _, _)) -> 
-        ox * tx <= x && 
-        ox * tx + tx > x && 
-        oy * ty <= y && 
-        oy * ty + ty > y)
-    >> fun (Tile (_, _, kind, _)) -> kind
-
 let nextPosition runState characterState (x, y) tiles =
     let (nx, ny) = 
         match characterState with
