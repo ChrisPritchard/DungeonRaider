@@ -81,6 +81,8 @@ let getView runState worldState =
                         MappedImage ("dungeon", wall, (rx, ry - ty, tx, ty * 2), Color.White)
                     | _ ->
                         MappedImage ("dungeon", sprintf "ceiling_%s" (keyForAdjacency adjacency Block i), (rx, ry, tx, ty), Color.White)
+                | StairsUp ->
+                    MappedImage ("dungeon", "wall_stairsup", (rx, ry - ty, tx, ty * 2), Color.White)
                 | other -> 
                     MappedImage ("dungeon", sprintf "floor_%s" (keyForAdjacency adjacency other i), (rx, ry, tx, ty), Color.White))
         [
