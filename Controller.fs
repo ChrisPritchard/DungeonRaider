@@ -29,7 +29,9 @@ let nextState runState state =
         Standing elapsed
     | Standing _ when isAnyPressed walkKeys runState -> 
         Walking elapsed
-    | Walking _ when isAnyPressed walkKeys runState |> not -> 
+    | Standing _ when isMousePressed (true, false) runState -> 
+        Walking elapsed
+    | Walking _ when isAnyPressed walkKeys runState || isMousePressed (true, false) runState |> not -> 
         Standing elapsed
     | other -> other
 

@@ -52,6 +52,9 @@ let wasJustPressed key runState = List.contains key runState.keyboard.keysDown
 let wasAnyJustPressed keyList runState = keyList |> List.exists (fun k -> wasJustPressed k runState)
 let isPressed key runState = List.contains key runState.keyboard.pressed
 let isAnyPressed keyList runState = keyList |> List.exists (fun k -> isPressed k runState)
+let isMousePressed (left, right) runState = 
+    let (ml, mr) = runState.mouse.pressed
+    ((ml && left) || (mr && right))
 
 type GameLoop<'TModel> (resolution, assetsToLoad, updateModel, getView, showFps)
     as this = 
