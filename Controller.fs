@@ -44,12 +44,12 @@ let nextFacing runState characterState facing =
 let isBlocked (playerx, playery) (Tile (x, y, kind, _)) =
     let checkBlock () =
         let blockx, blocky = x * tx, y * ty
-        let isOnX = // right left
-            (playerx + boundaryx >= blockx && playerx + boundaryx < blockx + tx) 
-            || (playerx - boundaryx < blockx && playerx - boundaryx + tx > blockx)
-        let isOnY = // below above
-            (playery + boundaryy >= blocky && playery + boundaryy < blocky + ty) 
-            || (playery - boundaryy < blocky && playery - boundaryy + ty > blocky)
+        let isOnX =
+            (playerx >= blockx && playerx < blockx + tx) // block is left
+            || (playerx < blockx + tx && playerx >= blockx) // block is right
+        let isOnY =
+            (playery >= blocky && playery < blocky + ty) // block is above
+            || (playery < blocky + ty && playery >= blocky) // block is below
         isOnX && isOnY
     match kind with
     | Block _ | StairsUp | StairsDown 1 -> 

@@ -69,7 +69,7 @@ let getView runState worldState =
         let blocks = 
             map 
             |> List.mapi (fun i (Tile (x, y, kind, adjacency)) -> 
-                let rx, ry = midx + (x*tx) - playerx - tx/2, midy + (y*ty) - playery
+                let rx, ry = midx + (x*tx) - playerx, midy + (y*ty) - playery + ph/2
                 i, kind, adjacency, rx, ry)
             |> List.filter (fun (_, _, _, rx, ry) -> 
                 rx + tx > 0 && rx < screenWidth && ry + ty > 0 && ry - ty < screenWidth)
@@ -90,4 +90,5 @@ let getView runState worldState =
         [
             yield! blocks
             yield MappedImage ("rogue", frameFor elapsed state facing, (midx - pw/2, midy - ph/2, pw, ph), Color.White)
+            yield Text ("default", sprintf "player: %i x, %i y" playerx playery, (10,10), TopLeft, 0.5, Color.White)
         ]

@@ -3,7 +3,7 @@ module Constants
 open Microsoft.Xna.Framework.Input
 
 let screenWidth, screenHeight = 800, 800
-let (dungeonSize, leafSize, roomSize, minCorridorLength) = 7, 7, 5, 3
+let (dungeonSize, leafSize, roomSize, minCorridorLength) = 30, 7, 5, 3
 
 let midx, midy = screenWidth / 2, screenHeight / 2
 // tile size
@@ -14,7 +14,7 @@ let pw, ph = tx * 3/2, ty * 3/2
 let frameSpeed = 75.
 let walkSpeed = tx / 16
 // player jiggle
-let boundaryx, boundaryy = pw/8, ph/8
+let boundaryx, boundaryy = pw/4, ph/8
 
 let quitKey = Keys.Escape
 let leftKeys = [Keys.Left;Keys.A]
