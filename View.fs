@@ -10,6 +10,7 @@ let resolution = Windowed (screenWidth, screenHeight)
 let assetsToLoad = [
     Font ("default", "Content/coders_crux")
     Texture ("white", "./Content/white.png")
+    Texture ("pointer", "./Content/pointer.png")
     TextureMap ("dungeon", "./Content/Sprites/dungeon.png", "./Content/Sprites/dungeon-key.csv")
     TextureMap ("cleric", "./Content/Sprites/cleric.png", "./Content/Sprites/standard-key.csv")
     TextureMap ("ranger", "./Content/Sprites/ranger.png", "./Content/Sprites/standard-key.csv")
@@ -91,4 +92,6 @@ let getView runState worldState =
             yield! blocks
             yield MappedImage ("rogue", frameFor elapsed state facing, (midx - pw/2, midy - ph/2, pw, ph), Color.White)
             yield Text ("default", sprintf "player: %f x, %f y" playerx playery, (10,10), TopLeft, 0.5, Color.White)
+            let mx, my = runState.mouse.position
+            yield Image ("pointer", (mx, my, 20, 20), Color.White)
         ]

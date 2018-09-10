@@ -19,6 +19,7 @@
   <!-- Stuff outside the content pipeline - loaded directly -->
   <ItemGroup>
     <None Include="Content\white.png" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="Content\pointer.png" CopyToOutputDirectory="PreserveNewest" />
     <None Include="Content\Sprites\dungeon.png" CopyToOutputDirectory="PreserveNewest" />
     <None Include="Content\Sprites\cleric.png" CopyToOutputDirectory="PreserveNewest" />
     <None Include="Content\Sprites\goblin.png" CopyToOutputDirectory="PreserveNewest" />
