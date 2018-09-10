@@ -72,6 +72,18 @@ let getMouseDir (mx, my) (x, y) =
         else 
             (rx, ry)) (x, y)
 
+let getKeysDir runState (x, y) = 
+    [
+        leftKeys, -walkSpeed, 0.
+        rightKeys, walkSpeed, 0.
+        upKeys, 0., -walkSpeed
+        downKeys, 0., walkSpeed
+    ] |> List.fold (fun (rx, ry) (keys, dx, dy) -> 
+        if isAnyPressed keys runState then 
+            (rx + dx, ry + dy) 
+        else 
+            (rx, ry)) (x, y)
+
 let nextPosition runState characterState (x, y) tiles =
     let (nx, ny) = 
         match characterState with
@@ -79,16 +91,7 @@ let nextPosition runState characterState (x, y) tiles =
             if isMousePressed (true, false) runState then 
                 getMouseDir runState.mouse.position (x, y)
             else
-                [
-                    leftKeys, -walkSpeed, 0.
-                    rightKeys, walkSpeed, 0.
-                    upKeys, 0., -walkSpeed
-                    downKeys, 0., walkSpeed
-                ] |> List.fold (fun (rx, ry) (keys, dx, dy) -> 
-                    if isAnyPressed keys runState then 
-                        (rx + dx, ry + dy) 
-                    else 
-                        (rx, ry)) (x, y)
+                getKeysDir runState (x, y)
         | _ -> (x, y)    
     let (bx, by) = tiles |> List.fold (fun (rx, ry) tile -> 
         let (bx, by) = isBlocked (nx, y) tile, isBlocked (x, ny) tile
