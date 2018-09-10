@@ -5,6 +5,8 @@ open Model
 open Bsp
 open Constants
 
+let getTile x y map = List.item (x * dungeonSize + y) map
+
 let nextState runState state =
     let elapsed = runState.elapsed
     let animFinished start = elapsed - start >= 10. * frameSpeed
@@ -44,7 +46,7 @@ let nextFacing runState characterState facing =
         else facing
     | _ -> facing
 
-let isBlocked (playerx, playery) (Tile (x, y, kind, _)) =
+let isBlocked (playerx, playery) playerTileKind (Tile (x, y, kind, _)) =
     let checkBlock () =
         let blockx, blocky = x * tx |> float, y * ty |> float
         let isOnX =
@@ -93,8 +95,13 @@ let nextPosition runState characterState (x, y) tiles =
             else
                 getKeysDir runState (x, y)
         | _ -> (x, y)    
-    let (bx, by) = tiles |> List.fold (fun (rx, ry) tile -> 
-        let (bx, by) = isBlocked (nx, y) tile, isBlocked (x, ny) tile
+    
+    let (px, py) = (int x / tx, int y / ty)
+    let (Tile (_,_,playerTileKind,_)) = getTile px py tiles
+    let adjacentTiles = [-1..1] |> List.collect (fun ox -> [-1..1] |> List.map (fun oy -> getTile (ox + px) (oy + py) tiles))
+
+    let (bx, by) = adjacentTiles |> List.fold (fun (rx, ry) tile -> 
+        let (bx, by) = isBlocked (nx, y) playerTileKind tile, isBlocked (x, ny) playerTileKind tile
         rx || bx, ry || by) (false, false)
     (if bx then x else nx), (if by then y else ny)
 
