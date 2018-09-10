@@ -47,7 +47,7 @@ let nextFacing runState characterState facing =
         else facing
     | _ -> facing
 
-let isBlocked (playerx, playery) playerTileKind (Tile (x, y, kind, _)) =
+let isBlocked (playerx, playery) (Tile (x, y, kind, _)) =
     let checkBlock () =
         let blockx, blocky = x * tx |> float, y * ty |> float
         let isOnX =
@@ -98,11 +98,10 @@ let nextPosition runState characterState (x, y) tiles =
         | _ -> (x, y)    
     
     let (px, py) = (int x / tx, int y / ty)
-    let (Tile (_,_,playerTileKind,_)) = getTile px py tiles
     let adjacentTiles = [-1..1] |> List.collect (fun ox -> [-1..1] |> List.map (fun oy -> getTile (ox + px) (oy + py) tiles))
 
     let (bx, by) = adjacentTiles |> List.fold (fun (rx, ry) tile -> 
-        let (bx, by) = isBlocked (nx, y) playerTileKind tile, isBlocked (x, ny) playerTileKind tile
+        let (bx, by) = isBlocked (nx, y) tile, isBlocked (x, ny) tile
         rx || bx, ry || by) (false, false)
     (if bx then x else nx), (if by then y else ny)
 
