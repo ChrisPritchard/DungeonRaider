@@ -33,16 +33,17 @@ let nextState runState state =
         Walking elapsed
     | Standing _ when isMousePressed (true, false) runState -> 
         Walking elapsed
-    | Walking _ when isAnyPressed walkKeys runState || isMousePressed (true, false) runState |> not -> 
+    | Walking _ when (isAnyPressed walkKeys runState || isMousePressed (true, false) runState) |> not -> 
         Standing elapsed
     | other -> other
 
 let nextFacing runState characterState facing = 
     let mx, _ = runState.mouse.position
+    let mouseMove = isMousePressed (true, false) runState
     match characterState with
     | Standing _ | Walking _ ->
-        if isAnyPressed leftKeys runState || mx < midx then Left
-        else if isAnyPressed rightKeys runState || mx > midx then Right
+        if isAnyPressed leftKeys runState || (mouseMove && mx < midx) then Left
+        else if isAnyPressed rightKeys runState || (mouseMove && mx > midx) then Right
         else facing
     | _ -> facing
 
