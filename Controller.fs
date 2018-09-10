@@ -36,10 +36,11 @@ let nextState runState state =
     | other -> other
 
 let nextFacing runState characterState facing = 
+    let mx, _ = runState.mouse.position
     match characterState with
     | Standing _ | Walking _ ->
-        if isAnyPressed leftKeys runState then Left
-        else if isAnyPressed rightKeys runState then Right
+        if isAnyPressed leftKeys runState || mx < midx then Left
+        else if isAnyPressed rightKeys runState || mx > midx then Right
         else facing
     | _ -> facing
 
@@ -59,20 +60,35 @@ let isBlocked (playerx, playery) (Tile (x, y, kind, _)) =
     | _ ->
         false
 
+let getMouseDir (mx, my) (x, y) =
+    [
+        mx < midx, -walkSpeed, 0.
+        mx > midx, walkSpeed, 0.
+        my < midy, 0., -walkSpeed
+        my > midy, 0., walkSpeed
+    ] |> List.fold (fun (rx, ry) (check, dx, dy) -> 
+        if check then 
+            (rx + dx, ry + dy) 
+        else 
+            (rx, ry)) (x, y)
+
 let nextPosition runState characterState (x, y) tiles =
     let (nx, ny) = 
         match characterState with
         | Walking _ ->
-            [
-                leftKeys, -walkSpeed, 0.
-                rightKeys, walkSpeed, 0.
-                upKeys, 0., -walkSpeed
-                downKeys, 0., walkSpeed
-            ] |> List.fold (fun (rx, ry) (keys, dx, dy) -> 
-                if isAnyPressed keys runState then 
-                    (rx + dx, ry + dy) 
-                else 
-                    (rx, ry)) (x, y)
+            if isMousePressed (true, false) runState then 
+                getMouseDir runState.mouse.position (x, y)
+            else
+                [
+                    leftKeys, -walkSpeed, 0.
+                    rightKeys, walkSpeed, 0.
+                    upKeys, 0., -walkSpeed
+                    downKeys, 0., walkSpeed
+                ] |> List.fold (fun (rx, ry) (keys, dx, dy) -> 
+                    if isAnyPressed keys runState then 
+                        (rx + dx, ry + dy) 
+                    else 
+                        (rx, ry)) (x, y)
         | _ -> (x, y)    
     let (bx, by) = tiles |> List.fold (fun (rx, ry) tile -> 
         let (bx, by) = isBlocked (nx, y) tile, isBlocked (x, ny) tile
