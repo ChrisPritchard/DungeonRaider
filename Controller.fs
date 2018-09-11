@@ -64,16 +64,10 @@ let isBlocked (playerx, playery) (Tile (x, y, kind, _)) =
         false
 
 let getMouseDir (mx, my) (x, y) =
-    [
-        mx < midx, -walkSpeed, 0.
-        mx > midx, walkSpeed, 0.
-        my < midy, 0., -walkSpeed
-        my > midy, 0., walkSpeed
-    ] |> List.fold (fun (rx, ry) (check, dx, dy) -> 
-        if check then 
-            (rx + dx, ry + dy) 
-        else 
-            (rx, ry)) (x, y)
+    let mx, my = mx - midx, my - midy
+    let angle = abs (float mx) / abs (float my) |> atan
+    let dx, dy = sin angle * walkSpeed, cos angle * walkSpeed
+    x + dx * (if mx < 0 then -1. else 1.), y + dy * (if my < 0 then -1. else 1.)
 
 let getKeysDir runState (x, y) = 
     [
