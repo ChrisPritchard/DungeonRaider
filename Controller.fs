@@ -114,11 +114,12 @@ let advanceGame runState worldState =
     | None -> 
         let map = dungeon dungeonSize leafSize roomSize minCorridorLength
         let position = startPos map
-        let (state, facing, position) = (Standing 0., Left, position)
-        Playing (map, state, facing, position) |> Some
-    | Some (Playing (map, state, facing, position)) -> 
-        let newState = nextState runState state
-        let newFacing = nextFacing runState newState facing
-        let newPosition = nextPosition runState newState position map
-        Playing (map, newState, newFacing, newPosition) |> Some
+        let player = { state = Standing 0.; facing = Left; position = position }
+        Playing (map, player) |> Some
+    | Some (Playing (map, player)) -> 
+        let newState = nextState runState player.state
+        let newFacing = nextFacing runState newState player.facing
+        let newPosition = nextPosition runState newState player.position map
+        let player = { state = newState; facing = newFacing; position = newPosition }
+        Playing (map, player) |> Some
     | other -> other

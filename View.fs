@@ -66,7 +66,8 @@ let wallFor adjacency index =
 let getView runState worldState =
     let elapsed = runState.elapsed
     match worldState with
-    | Playing (map, state, facing, (playerx, playery)) ->
+    | Playing (map, player) ->
+        let playerx, playery = player.position
         let blocks = 
             map 
             |> List.mapi (fun i (Tile (x, y, kind, adjacency)) -> 
@@ -90,7 +91,7 @@ let getView runState worldState =
                     MappedImage ("dungeon", sprintf "floor_%s" (keyForAdjacency adjacency other i), (rx, ry, tx, ty), Color.White))
         [
             yield! blocks
-            yield MappedImage ("rogue", frameFor elapsed state facing, (midx - pw/2, midy - ph/2, pw, ph), Color.White)
+            yield MappedImage ("rogue", frameFor elapsed player.state player.facing, (midx - pw/2, midy - ph/2, pw, ph), Color.White)
             yield Text ("default", sprintf "player: %f x, %f y" playerx playery, (10,10), TopLeft, 0.5, Color.White)
             let mx, my = runState.mouse.position
             yield Image ("pointer", (mx, my, 20, 20), Color.White)
