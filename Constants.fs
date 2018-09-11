@@ -9,12 +9,13 @@ let midx, midy = screenWidth / 2, screenHeight / 2
 // tile size
 let tx, ty = 48, 48
 // player size
-let pw, ph = tx * 3/2, ty * 3/2
+let playerwidth, playerheight = tx * 3/2, ty * 3/2
+let monsterw, monsterh = playerwidth * 3/2, playerheight * 3/2
 
 let frameSpeed = 75.
 let walkSpeed = tx / 16 |> float
 // player jiggle
-let boundaryx, boundaryyup, boundaryydown = float (pw/4), float (ph/8), float (ph/16)
+let boundaryx, boundaryyup, boundaryydown = float (playerwidth/4), float (playerheight/8), float (playerheight/16)
 
 let quitKey = Keys.Escape
 let leftKeys = [Keys.Left;Keys.A]

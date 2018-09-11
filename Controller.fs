@@ -110,9 +110,10 @@ let startPos =
 
 let newLevel () =
     let map = dungeon dungeonSize leafSize roomSize minCorridorLength
-    let position = startPos map
-    let player = { state = Standing 0.; facing = Left; position = position }
-    Playing (map, player, []) |> Some
+    let (px,py) = startPos map
+    let player = { state = Standing 0.; facing = Left; position = (px, py) }
+    let monster = { state = Standing 0.; facing = Left; position = (px + float tx*2., py + float ty*2.) }
+    Playing (map, player, [monster]) |> Some
 
 let advancePlayer map runState player =
     let newState = nextState runState player.state
