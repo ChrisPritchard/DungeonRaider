@@ -108,18 +108,28 @@ let startPos =
                     (y+1)*ty + ty/2 |> float) 
             | _ -> None)
 
+let newLevel () =
+    let map = dungeon dungeonSize leafSize roomSize minCorridorLength
+    let position = startPos map
+    let player = { state = Standing 0.; facing = Left; position = position }
+    Playing (map, player, []) |> Some
+
+let advancePlayer map runState player =
+    let newState = nextState runState player.state
+    let newFacing = nextFacing runState newState player.facing
+    let newPosition = nextPosition runState newState player.position map
+    { state = newState; facing = newFacing; position = newPosition }
+
+let advanceMonster map runState monster = 
+    monster
+
 let advanceGame runState worldState =
     match worldState with
     | _ when wasJustPressed quitKey runState -> None
     | None -> 
-        let map = dungeon dungeonSize leafSize roomSize minCorridorLength
-        let position = startPos map
-        let player = { state = Standing 0.; facing = Left; position = position }
-        Playing (map, player) |> Some
-    | Some (Playing (map, player)) -> 
-        let newState = nextState runState player.state
-        let newFacing = nextFacing runState newState player.facing
-        let newPosition = nextPosition runState newState player.position map
-        let player = { state = newState; facing = newFacing; position = newPosition }
-        Playing (map, player) |> Some
+        newLevel ()
+    | Some (Playing (map, player, monsters)) -> 
+        let newPlayer = advancePlayer map runState player
+        let newMonsters = monsters |> List.map (advanceMonster map runState)
+        Playing (map, newPlayer, newMonsters) |> Some
     | other -> other

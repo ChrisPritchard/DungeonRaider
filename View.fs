@@ -67,7 +67,7 @@ let wallFor adjacency index =
 let getView runState worldState =
     let elapsed = runState.elapsed
     match worldState with
-    | Playing (map, player) ->
+    | Playing (map, player, monsters) ->
         let playerx, playery = player.position
         let blocks = 
             map 
