@@ -3,7 +3,7 @@ module Constants
 open Microsoft.Xna.Framework.Input
 
 let screenWidth, screenHeight = 800, 800
-let (dungeonSize, leafSize, roomSize, minCorridorLength) = 30, 7, 5, 3
+let dungeonSize, leafSize, roomSize, minCorridorLength = 30, 7, 5, 3
 
 let midx, midy = screenWidth / 2, screenHeight / 2
 // tile size
