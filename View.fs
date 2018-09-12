@@ -54,12 +54,13 @@ let wallFor adjacency index =
             Some <| sprintf "wall_%i" (index % 4 + 1)
 
 let relativeToPlayer (playerx, playery) (x, y) =
-    midx + x - (playerx*tilewidth), midy + y - (playery*tileheight) + playerheight/2
+    let relx, rely = midx + (x - playerx) * tilewidth, midy + (y - playery) * tileheight
+    relx - tilewidth / 2, rely - playerheight / 2
 
 let tiles playerPosition map = 
     map 
     |> List.mapi (fun i (Tile (x, y, kind, adjacency)) -> 
-        let rx, ry = relativeToPlayer playerPosition (x*tilewidth, y*tileheight)
+        let rx, ry = relativeToPlayer playerPosition (x, y)
         i, kind, adjacency, rx, ry)
     |> List.filter (fun (_, _, _, rx, ry) -> 
         rx + tilewidth > 0 && rx < screenWidth && ry + tileheight > 0 && ry - tileheight < screenWidth)
