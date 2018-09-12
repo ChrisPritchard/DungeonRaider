@@ -6,12 +6,12 @@ and TileKind = Room | Door | Corridor | Block | StairsUp | StairsDown of int
 type Entity = {
         state: EntityState
         facing: Facing
-        position: float * float
+        position: int * int
     }
 and EntityState =
     | Standing of startTime:float 
     | Gesturing of startTime:float 
-    | Walking of startTime:float 
+    | Walking of destination: (int * int) * startTime:float 
     | Striking of startTime:float 
     | Dying of startTime:float 
     | Dead

@@ -54,30 +54,29 @@ let wallFor adjacency index =
             Some <| sprintf "wall_%i" (index % 4 + 1)
 
 let relativeToPlayer (playerx, playery) (x, y) =
-    midx + x - int playerx, midy + y - int playery + playerheight/2
+    midx + x - (playerx*tilewidth), midy + y - (playery*tileheight) + playerheight/2
 
 let tiles playerPosition map = 
     map 
     |> List.mapi (fun i (Tile (x, y, kind, adjacency)) -> 
-        let rx, ry = relativeToPlayer playerPosition (x*tx, y*ty)
+        let rx, ry = relativeToPlayer playerPosition (x*tilewidth, y*tileheight)
         i, kind, adjacency, rx, ry)
     |> List.filter (fun (_, _, _, rx, ry) -> 
-        rx + tx > 0 && rx < screenWidth && ry + ty > 0 && ry - ty < screenWidth)
+        rx + tilewidth > 0 && rx < screenWidth && ry + tileheight > 0 && ry - tileheight < screenWidth)
     |> List.map (fun (i, kind, adjacency, rx, ry) -> 
         match kind with
         | Block -> 
             match wallFor adjacency i with
             | Some wall -> 
-                MappedImage ("dungeon", wall, (rx, ry - ty, tx, ty * 2), Color.White)
+                MappedImage ("dungeon", wall, (rx, ry - tileheight, tilewidth, tileheight * 2), Color.White)
             | _ ->
-                MappedImage ("dungeon", sprintf "ceiling_%s" (keyForAdjacency adjacency Block i), (rx, ry, tx, ty), Color.White)
+                MappedImage ("dungeon", sprintf "ceiling_%s" (keyForAdjacency adjacency Block i), (rx, ry, tilewidth, tileheight), Color.White)
         | StairsUp ->
-            MappedImage ("dungeon", "wall_stairsup", (rx, ry - ty, tx, ty * 2), Color.White)
+            MappedImage ("dungeon", "wall_stairsup", (rx, ry - tileheight, tilewidth, tileheight * 2), Color.White)
         | StairsDown index ->
-            MappedImage ("dungeon", sprintf "stairsdown_%i" (index + 1), (rx, ry, tx, ty), Color.White)
+            MappedImage ("dungeon", sprintf "stairsdown_%i" (index + 1), (rx, ry, tilewidth, tileheight), Color.White)
         | other -> 
-            MappedImage ("dungeon", sprintf "floor_%s" (keyForAdjacency adjacency other i), (rx, ry, tx, ty), Color.White))
-
+            MappedImage ("dungeon", sprintf "floor_%s" (keyForAdjacency adjacency other i), (rx, ry, tilewidth, tileheight), Color.White))
 
 let frameFor elapsed state facing = 
     let frameFor start = (((elapsed - start) % (10. * frameSpeed)) / frameSpeed) + 1. |> floor |> int
@@ -85,7 +84,7 @@ let frameFor elapsed state facing =
     match state with
     | Standing start -> sprintf "stand%s%i" facing <| frameFor start
     | Gesturing start -> sprintf "gesture%s%i" facing <| frameFor start
-    | Walking start -> sprintf "walk%s%i" facing <| frameFor start
+    | Walking (_, start) -> sprintf "walk%s%i" facing <| frameFor start
     | Striking start -> sprintf "strike%s%i" facing <| frameFor start
     | Dying start -> sprintf "die%s%i" facing <| frameFor start
     | Dead -> sprintf "die%s10" facing
@@ -105,8 +104,8 @@ let getView runState worldState =
                     yield! monsters |> List.map (fun m -> 
                         let monsterx, monstery = m.position
                         let monsterFrame = frameFor elapsed m.state m.facing
-                        let rx, ry = relativeToPlayer player.position (int monsterx - monsterw/2, int monstery - monsterh)
-                        let monsterRenderRect = rx, ry, monsterw, monsterh
+                        let rx, ry = relativeToPlayer player.position (int monsterx - monsterwidth/2, int monstery - monsterheight)
+                        let monsterRenderRect = rx, ry, monsterwidth, monsterheight
                         monsterx, monstery, MappedImage ("minotaur", monsterFrame, monsterRenderRect, Color.White))
                     
                     let playerFrame = sprintf "%s_A" <| frameFor elapsed player.state player.facing

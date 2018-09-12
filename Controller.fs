@@ -25,14 +25,14 @@ let nextState runState state =
         Standing elapsed
     | Standing _ when isPressed strikeKey runState -> 
         Striking elapsed
-    | Walking _ when isPressed strikeKey runState -> 
-        Striking elapsed
+    // | Walking _ when isPressed strikeKey runState -> 
+    //     Striking elapsed
     | Striking start when animFinished start ->
         Standing elapsed
-    | Standing _ when isAnyPressed walkKeys runState -> 
-        Walking elapsed
-    | Standing _ when isMousePressed (true, false) runState -> 
-        Walking elapsed
+    // | Standing _ when isAnyPressed walkKeys runState -> 
+    //     Walking elapsed
+    // | Standing _ when isMousePressed (true, false) runState -> 
+    //     Walking elapsed
     | Walking _ when (isAnyPressed walkKeys runState || isMousePressed (true, false) runState) |> not -> 
         Standing elapsed
     | other -> other
@@ -49,13 +49,13 @@ let nextFacing runState characterState facing =
 
 let isBlocked (playerx, playery) (Tile (x, y, kind, _)) =
     let checkBlock () =
-        let blockx, blocky = x * tx |> float, y * ty |> float
+        let blockx, blocky = x * tilewidth |> float, y * tileheight |> float
         let isOnX =
-            (playerx - boundaryx >= blockx && playerx - boundaryx < blockx + float tx) // block is left
-            || (playerx + boundaryx < blockx + float tx && playerx + boundaryx >= blockx) // block is right
+            (playerx - boundaryx >= blockx && playerx - boundaryx < blockx + float tilewidth) // block is left
+            || (playerx + boundaryx < blockx + float tilewidth && playerx + boundaryx >= blockx) // block is right
         let isOnY =
-            (playery - boundaryyup >= blocky && playery - boundaryyup < blocky + float ty) // block is above
-            || (playery + boundaryydown < blocky + float ty && playery + boundaryydown >= blocky) // block is below
+            (playery - boundaryyup >= blocky && playery - boundaryyup < blocky + float tileheight) // block is above
+            || (playery + boundaryydown < blocky + float tileheight && playery + boundaryydown >= blocky) // block is below
         isOnX && isOnY
     match kind with
     | Block _ | StairsUp | StairsDown 1 -> 
@@ -91,7 +91,7 @@ let nextPosition runState characterState (x, y) tiles =
                 getKeysDir runState (x, y)
         | _ -> (x, y)    
     
-    let (px, py) = (int x / tx, int y / ty)
+    let (px, py) = (int x / tilewidth, int y / tileheight)
     let adjacentTiles = [-1..1] |> List.collect (fun ox -> [-1..1] |> List.map (fun oy -> getTile (ox + px) (oy + py) tiles))
 
     let (bx, by) = adjacentTiles |> List.fold (fun (rx, ry) tile -> 
@@ -103,23 +103,21 @@ let startPos =
     List.pick (fun (Tile (x, y, kind, _)) -> 
         match kind with 
             | StairsUp -> 
-                Some (
-                    x*tx + tx/2 |> float, 
-                    (y+1)*ty + ty/2 |> float) 
+                Some (x, y) 
             | _ -> None)
 
 let newLevel () =
     let map = dungeon dungeonSize leafSize roomSize minCorridorLength
     let (px,py) = startPos map
     let player = { state = Standing 0.; facing = Left; position = (px, py) }
-    let monster = { state = Standing 0.; facing = Left; position = (px + float tx*2., py + float ty*2.) }
+    let monster = { state = Standing 0.; facing = Left; position = (px + 2, py + 2) }
     Playing (map, player, [monster]) |> Some
 
 let advancePlayer map runState player =
     let newState = nextState runState player.state
     let newFacing = nextFacing runState newState player.facing
-    let newPosition = nextPosition runState newState player.position map
-    { state = newState; facing = newFacing; position = newPosition }
+//    let newPosition = nextPosition runState newState player.position map
+    { player with state = newState; facing = newFacing }
 
 let advanceMonster map runState monster = 
     monster

@@ -3,17 +3,16 @@ module Constants
 open Microsoft.Xna.Framework.Input
 
 let screenWidth, screenHeight = 800, 800
+let midx, midy = screenWidth / 2, screenHeight / 2
+
 let dungeonSize, leafSize, roomSize, minCorridorLength = 30, 7, 5, 3
 
-let midx, midy = screenWidth / 2, screenHeight / 2
-// tile size
-let tx, ty = 48, 48
-// player size
-let playerwidth, playerheight = tx * 3/2, ty * 3/2
-let monsterw, monsterh = playerwidth * 3/2, playerheight * 3/2
+let tilewidth, tileheight = 48, 48
+let playerwidth, playerheight = tilewidth * 3/2, tileheight * 3/2
+let monsterwidth, monsterheight = playerwidth * 3/2, playerheight * 3/2
 
 let frameSpeed = 75.
-let walkSpeed = tx / 16 |> float
+let walkSpeed = tilewidth / 16 |> float
 // player jiggle
 let boundaryx, boundaryyup, boundaryydown = float (playerwidth/4), float (playerheight/8), float (playerheight/16)
 
