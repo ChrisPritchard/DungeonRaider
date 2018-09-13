@@ -99,19 +99,17 @@ let getView runState worldState =
         [
             yield! tiles player.position map
 
-            let playerx, playery = player.position
             yield!
                 [
                     yield! monsters |> List.map (fun m -> 
-                        let monsterx, monstery = m.position
                         let monsterFrame = frameFor elapsed m.state m.facing
-                        let rx, ry = relativeToPlayer player.position (int monsterx - monsterwidth/2, int monstery - monsterheight)
+                        let rx, ry = relativeToPlayer player.position m.position
                         let monsterRenderRect = rx, ry, monsterwidth, monsterheight
-                        monsterx, monstery, MappedImage ("minotaur", monsterFrame, monsterRenderRect, Color.White))
+                        m.position, MappedImage ("minotaur", monsterFrame, monsterRenderRect, Color.White))
                     
                     let playerFrame = sprintf "%s_A" <| frameFor elapsed player.state player.facing
-                    yield playerx, playery, MappedImage ("rogue", playerFrame, playerRenderRect, Color.White)
-                ] |> Seq.sortBy (fun (x, y, _) -> y, x) |> Seq.map (fun (_, _, image) -> image)
+                    yield player.position, MappedImage ("rogue", playerFrame, playerRenderRect, Color.White)
+                ] |> Seq.sortBy (fun ((x, y), _) -> y, x) |> Seq.map (fun (_, image) -> image)
             
             let mx, my = runState.mouse.position
             yield Image ("pointer", (mx, my, 20, 20), Color.White)
