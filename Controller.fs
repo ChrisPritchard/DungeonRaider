@@ -106,13 +106,6 @@ let startPos =
                 Some (x, y) 
             | _ -> None)
 
-let newLevel () =
-    let map = dungeon dungeonSize leafSize roomSize minCorridorLength
-    let (px,py) = startPos map
-    let player = { state = Standing 0.; facing = Left; position = (px, py) }
-    let monster = { state = Standing 0.; facing = Left; position = (px + 2, py + 2) }
-    Playing (map, player, [monster]) |> Some
-
 let advancePlayer map runState player =
     let newState = nextState runState player.state
     let newFacing = nextFacing runState newState player.facing
@@ -121,6 +114,13 @@ let advancePlayer map runState player =
 
 let advanceMonster map runState monster = 
     monster
+
+let newLevel () =
+    let map = dungeon dungeonSize leafSize roomSize minCorridorLength
+    let (px,py) = startPos map
+    let player = { state = Standing 0.; facing = Left; position = (px, py); path = [] }
+    let monster = { state = Standing 0.; facing = Left; position = (px + 2, py + 2); path = [] }
+    Playing (map, player, [monster]) |> Some
 
 let advanceGame runState worldState =
     match worldState with

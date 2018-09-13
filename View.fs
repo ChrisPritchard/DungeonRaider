@@ -85,7 +85,7 @@ let frameFor elapsed state facing =
     match state with
     | Standing start -> sprintf "stand%s%i" facing <| frameFor start
     | Gesturing start -> sprintf "gesture%s%i" facing <| frameFor start
-    | Walking (_, start) -> sprintf "walk%s%i" facing <| frameFor start
+    | Walking start -> sprintf "walk%s%i" facing <| frameFor start
     | Striking start -> sprintf "strike%s%i" facing <| frameFor start
     | Dying start -> sprintf "die%s%i" facing <| frameFor start
     | Dead -> sprintf "die%s10" facing
