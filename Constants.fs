@@ -17,11 +17,12 @@ let walkSpeed = tilewidth / 16 |> float
 let boundaryx, boundaryyup, boundaryydown = float (playerwidth/4), float (playerheight/8), float (playerheight/16)
 
 let quitKey = Keys.Escape
+
 let leftKeys = [Keys.Left;Keys.A]
 let rightKeys = [Keys.Right;Keys.D]
 let upKeys = [Keys.Up;Keys.W]
 let downKeys = [Keys.Down;Keys.S]
-let walkKeys = [Keys.Left;Keys.Right;Keys.Up;Keys.Down;Keys.A;Keys.D;Keys.W;Keys.S]
+
 let deathKey = Keys.X
 let gestureKey = Keys.C
 let strikeKey = Keys.F
