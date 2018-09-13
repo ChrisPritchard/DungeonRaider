@@ -127,7 +127,7 @@ let updatePlayerPath map runState player =
         | _ when player.moveStart <> 0. -> player
         | _ when not <| isOpen dest map -> player
         | _ -> 
-            { player with path = [(x + dx, y + dy)] }
+            { player with path = [(x + dx, y + dy)]; moveStart = runState.elapsed }
 
 let updateEntityFacing entity =
     let (x, _) = entity.position
@@ -139,8 +139,15 @@ let updateEntityFacing entity =
     | _ -> entity
 
 let updateEntityState entity =
-    // TODO
-    entity
+    match entity.path with
+    | _::_ when entity.moveStart <> 0. -> 
+        match entity.state with
+        | Walking _ -> entity
+        | _ -> { entity with state = Walking entity.moveStart }
+    | _ ->
+        match entity.state with
+        | Standing _ -> entity
+        | _ -> { entity with state = Standing entity.moveStart }
 
 let advancePlayer map runState =
     updateEntityPosition runState
