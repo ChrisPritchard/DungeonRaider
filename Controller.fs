@@ -112,10 +112,12 @@ let isOpen (x, y) map =
 let updatePlayerPath map runState player =
     let (x, y) = player.position
     match getKeysDir runState with
-    | (0, 0) -> player
+    | (0, 0) -> 
+        player
     | (dx, dy) when isOpen (x + dx, y + dy) map -> 
         { player with path = [(x + dx, y + dy)] }
-    | _ -> player
+    | _ -> 
+        player
 
 let updateEntityFacing entity =
     let (x, _) = entity.position
@@ -155,8 +157,8 @@ let newLevel () =
 
     let map = dungeon dungeonSize leafSize roomSize minCorridorLength
     let (px,py) = startPos map
-    let player = { state = Standing 0.; facing = Left; position = (px, py); path = [] }
-    let monster = { state = Standing 0.; facing = Left; position = (px + 2, py + 2); path = [] }
+    let player = { state = Standing 0.; facing = Left; position = (px, py); path = []; moveStart = 0. }
+    let monster = { state = Standing 0.; facing = Left; position = (px + 2, py + 2); path = []; moveStart = 0. }
     Playing (map, player, [monster]) |> Some
 
 let advanceGame runState worldState =

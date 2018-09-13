@@ -8,6 +8,7 @@ type Entity = {
         facing: Facing
         position: int * int
         path: (int * int) list
+        moveStart: float
     }
 and EntityState =
     | Standing of startTime:float 
