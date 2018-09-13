@@ -100,6 +100,12 @@ let getKeysDir runState =
 //         rx || bx, ry || by) (false, false)
 //     (if bx then x else nx), (if by then y else ny)
 
+let updateEntityPosition runState entity =
+    match entity.path with
+    | next::rest when runState.elapsed - entity.moveStart >= timeBetweenTiles ->
+        { entity with position = next; path = rest; moveStart = 0. }
+    | _ -> entity
+
 let isOpen (x, y) map =
     let tile = List.tryFind (fun (Tile (tx, ty, _, _)) -> tx = x && ty = y) map
     match tile with
@@ -114,10 +120,14 @@ let updatePlayerPath map runState player =
     match getKeysDir runState with
     | (0, 0) -> 
         player
-    | (dx, dy) when isOpen (x + dx, y + dy) map -> 
-        { player with path = [(x + dx, y + dy)] }
-    | _ -> 
-        player
+    | (dx, dy) ->
+        let dest = x + dx, y + dy
+        match player.path with
+        | existing::_ when existing = dest -> player
+        | _ when player.moveStart <> 0. -> player
+        | _ when not <| isOpen dest map -> player
+        | _ -> 
+            { player with path = [(x + dx, y + dy)] }
 
 let updateEntityFacing entity =
     let (x, _) = entity.position
@@ -129,15 +139,14 @@ let updateEntityFacing entity =
     | _ -> entity
 
 let updateEntityState entity =
+    // TODO
     entity
 
 let advancePlayer map runState =
-    updatePlayerPath map runState
+    updateEntityPosition runState
+    >> updatePlayerPath map runState
     >> updateEntityFacing 
     >> updateEntityState
-    // calculate path update
-    // calculate facing
-    // calculate state
 
 //     let newState = nextState runState player.state
 //     let newFacing = nextFacing runState newState player.facing

@@ -12,6 +12,8 @@ let playerwidth, playerheight = tilewidth * 3/2, tileheight * 3/2
 let monsterwidth, monsterheight = playerwidth * 3/2, playerheight * 3/2
 
 let frameSpeed = 75.
+let timeBetweenTiles = 1000.
+
 let walkSpeed = tilewidth / 16 |> float
 // player jiggle
 let boundaryx, boundaryyup, boundaryydown = float (playerwidth/4), float (playerheight/8), float (playerheight/16)
