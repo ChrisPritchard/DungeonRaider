@@ -102,6 +102,10 @@ let getTile x y map =
 //         rx || bx, ry || by) (false, false)
 //     (if bx then x else nx), (if by then y else ny)
 
+let mouseTile x y runState = 
+    let mx, my = runState.mouse.position
+    x - ((midx - mx) / tilewidth), y - ((midy - my) / tileheight)
+
 let isOpen x y map =
     match getTile x y map with
     | None -> false
@@ -126,10 +130,9 @@ let astarConfig map : AStar.Config<int * int> =
    
 let getNewPlayerPath map runState (x, y) =
     if isMousePressed (true, false) runState then
-        let mx, my = runState.mouse.position
-        let wx, wy = x - ((midx - mx) / tilewidth), y - ((midy - my) / tileheight)
-        if isOpen wx wy map then 
-            AStar.search (x, y) (wx, wy) (astarConfig map) |> Option.bind (Seq.rev >> Seq.toList >> Some)
+        let mx, my = mouseTile x y runState
+        if isOpen mx my map then 
+            AStar.search (x, y) (mx, my) (astarConfig map) |> Option.bind (Seq.rev >> Seq.toList >> Some)
         else
             None
     else
