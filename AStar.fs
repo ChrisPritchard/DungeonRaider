@@ -3,17 +3,17 @@ module AStar
 type Config<'a> = 
     {
         /// <summary>
-        /// A method that, given a source, will return its neighbours
+        /// A method that, given a source, will return its neighbours.
         /// </summary>
         neighbours: 'a -> seq<'a>
         /// <summary>
         /// Given two nodes that are next to each other, return the g cost between them.
-        /// The g cost is the cost of moving from one to the other directly
+        /// The g cost is the cost of moving from one to the other directly.
         /// </summary>
         gCost: 'a -> 'a -> float
         /// <summary>
-        /// Given two nodes, return the f cost between them. This is a heuristic, and is used from a given node to the goal.
-        /// Line of site distance is an example of how this might be expressed
+        /// Given two nodes, return the f cost between them. This is a heuristic score used from a given node to the goal.
+        /// Line-of-sight distance is an example of how this might be defined.
         /// </summary>
         fCost: 'a -> 'a -> float
     }
