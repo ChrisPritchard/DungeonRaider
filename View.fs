@@ -56,7 +56,7 @@ let wallFor adjacency index =
 let relativeToPlayer (playerx, playery) (otherx, othery) =
     (midx + int otherx) - int playerx - tilewidth/2, (midy + int othery) - int playery
 
-let tiles playerPosition map = 
+let tiles playerPosition showGrid map = 
     map 
     |> List.mapi (fun i (Tile (x, y, kind, adjacency)) -> 
         let rx, ry = relativeToPlayer playerPosition (x * tilewidth |> float, y * tileheight |> float)
@@ -76,7 +76,12 @@ let tiles playerPosition map =
         | StairsDown index ->
             MappedImage ("dungeon", sprintf "stairsdown_%i" (index + 1), (rx, ry, tilewidth, tileheight), Color.White)
         | other -> 
-            MappedImage ("dungeon", sprintf "floor_%s" (keyForAdjacency adjacency other i), (rx, ry, tilewidth, tileheight), Color.White))
+            let rect = 
+                if showGrid then 
+                    (rx + 1, ry + 1, tilewidth - 2, tileheight - 2) 
+                else 
+                    (rx, ry, tilewidth, tileheight)
+            MappedImage ("dungeon", sprintf "floor_%s" (keyForAdjacency adjacency other i), rect, Color.White))
 
 let frameFor elapsed state facing = 
     let frameFor start = (((elapsed - start) % (10. * frameSpeed)) / frameSpeed) + 1. |> floor |> int
@@ -107,7 +112,7 @@ let getView runState worldState =
     | Playing (map, player, monsters) ->
         let playerPos = realPosition runState player
         [
-            yield! tiles playerPos map
+            yield! tiles playerPos true map
 
             yield!
                 [

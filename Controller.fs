@@ -104,7 +104,8 @@ let getTile x y map =
 
 let mouseTile x y runState = 
     let mx, my = runState.mouse.position
-    x - ((midx - mx) / tilewidth), y - ((midy - my) / tileheight)
+    let relx, rely = (midx - mx) / tilewidth, (midy - my) / tileheight
+    x - relx, y - rely
 
 let isOpen x y map =
     match getTile x y map with
@@ -123,7 +124,8 @@ let astarConfig map : AStar.Config<int * int> =
             nx > 0 && ny > 0 &&
             nx < dungeonSize && ny < dungeonSize &&
             isOpen nx ny map)
-    let gScore (x1, y1) (x2, y2) = if (abs (x2 - x1) + abs (y2 - y1)) = 2 then 1.4 else 1.
+    let gScore (x1, y1) (x2, y2) = 
+        if (abs (x2 - x1) + abs (y2 - y1)) = 2 then 1.4 else 1.
     let fScore (x, y) (gx, gy) = 
         sqrt ((float gx - float x)**2. + (float gy - float y)**2.)
     { neighbours = neighbours; gCost = gScore; fCost = fScore }
