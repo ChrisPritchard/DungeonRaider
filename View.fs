@@ -129,4 +129,5 @@ let getView runState worldState =
             
             let mx, my = runState.mouse.position
             yield Image ("pointer", (mx, my, 20, 20), Color.White)
+            yield Text ("default", sprintf "%i, %i" (mx - midx) (my - midy), (20, 20), TopLeft, 0.5, Color.White)
         ]
