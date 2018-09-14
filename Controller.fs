@@ -140,13 +140,13 @@ let updateEntityPosition runState pathFinder entity =
     | next::rest when runState.elapsed - entity.moveStart >= timeBetweenTiles ->
         let newPath = 
             match pathFinder runState next with
-            | None -> rest
-            | Some path -> path 
+            | Some (_::path) -> path 
+            | _ -> rest
         { entity with position = next; path = newPath; moveStart = runState.elapsed }
     | [] -> 
         match pathFinder runState entity.position with
-        | None -> entity
-        | Some path -> { entity with path = path; moveStart = runState.elapsed } 
+        | Some (_::path) -> { entity with path = path; moveStart = runState.elapsed } 
+        | _ -> entity
     | _ -> entity
 
 // let updatePlayerPath map runState player =
