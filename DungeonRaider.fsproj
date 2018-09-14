@@ -12,6 +12,7 @@
     <Compile Include="Adjacency.fs" />
     <Compile Include="Bsp.fs" />
     <Compile Include="View.fs" />
+    <Compile Include="AStar.fs" />
     <Compile Include="Controller.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
