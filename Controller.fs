@@ -108,9 +108,8 @@ let mouseTile x y runState =
 
     let tilex, tiley = 
         (if relx < 0 then relx - tilewidth/2 else relx + tilewidth/2) / tilewidth, 
-        //if rely < 0 then float rely / float tileheight |> floor |> int else rely
-        rely
-    x - tilex, y - tiley
+        if rely < 0 then float rely / float tileheight |> floor |> int else rely / tileheight
+    x - tilex, y - tiley - 1
 
 let isOpen x y map =
     match getTile x y map with
