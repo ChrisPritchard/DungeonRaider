@@ -32,26 +32,31 @@ let neighbourDeltas =
     |> Seq.map (fun ny -> dx, ny))
     |> Seq.toList
 
-let astarConfig map : AStar.Config<int * int> =
+let astarConfig map entities : AStar.Config<int * int> =
+    let isClear x y = 
+        isOpen x y map 
+        && entities |> Seq.forall (fun m -> 
+            m.position <> (x, y)
+            && match m.path with next::_ -> next <> (x, y) | _ -> true) 
     let neighbours (x, y) =
         neighbourDeltas 
         |> Seq.filter(fun (dx, dy) ->
             if abs dx + abs dy = 2 then
-                isOpen x (dy + y) map && isOpen (dx + x) y map
+                isClear x (dy + y) && isClear (dx + x) y
             else true)
         |> Seq.map (fun (dx, dy) -> x + dx, y + dy)
-        |> Seq.filter (fun (nx, ny) -> isOpen nx ny map)
+        |> Seq.filter (fun (nx, ny) -> isClear nx ny)
     let gScore (x1, y1) (x2, y2) = 
         if (abs (x2 - x1) + abs (y2 - y1)) = 2 then 1.4 else 1.
     let fScore (x, y) (gx, gy) = 
         sqrt ((float gx - float x)**2. + (float gy - float y)**2.)
     { neighbours = neighbours; gCost = gScore; fCost = fScore }
    
-let getNewPlayerPath map runState (x, y) =
+let getNewPlayerPath map monsters runState (x, y) =
     if isMousePressed (true, false) runState then
         let mx, my = mouseTile x y runState
         if isOpen mx my map then 
-            AStar.search (x, y) (mx, my) (astarConfig map) |> Option.bind (Seq.rev >> Seq.toList >> Some)
+            AStar.search (x, y) (mx, my) (astarConfig map monsters) |> Option.bind (Seq.rev >> Seq.toList >> Some)
         else
             None
     else
@@ -91,8 +96,8 @@ let updateEntityState entity =
         | Standing _ -> entity
         | _ -> { entity with state = Standing entity.moveStart }
 
-let advancePlayer map runState =
-    updateEntityPosition runState (getNewPlayerPath map)
+let advancePlayer map monsters runState =
+    updateEntityPosition runState (getNewPlayerPath map monsters)
     >> updateEntityFacing 
     >> updateEntityState
 
@@ -119,7 +124,7 @@ let advanceGame runState worldState =
     | None -> 
         newLevel ()
     | Some (Playing (map, player, monsters)) -> 
-        let newPlayer = advancePlayer map runState player
+        let newPlayer = advancePlayer map monsters runState player
         let newMonsters = monsters |> List.map (advanceMonster map runState)
         Playing (map, newPlayer, newMonsters) |> Some
     | other -> other
