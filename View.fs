@@ -113,10 +113,10 @@ let tiles player runState map =
             let rect = renderRect (rx, ry) (tilewidth, tileheight)
             MappedImage ("dungeon", sprintf "floor_%s" (keyForAdjacency adjacency other i), rect, Color.White))
 
-let frameFor elapsed state facing = 
-    let frameFor start = (((elapsed - start) % (10. * frameSpeed)) / frameSpeed) + 1. |> floor |> int
-    let facing = match facing with Left -> "left" | _ -> "right"
-    match state with
+let frameFor entity runState = 
+    let frameFor start = (((runState.elapsed - start) % (10. * frameSpeed)) / frameSpeed) + 1. |> floor |> int
+    let facing = match entity.facing with Left -> "left" | _ -> "right"
+    match entity.state with
     | Standing start -> sprintf "stand%s%i" facing <| frameFor start
     | Gesturing start -> sprintf "gesture%s%i" facing <| frameFor start
     | Walking start -> sprintf "walk%s%i" facing <| frameFor start
@@ -125,7 +125,6 @@ let frameFor elapsed state facing =
     | Dead -> sprintf "die%s10" facing
 
 let getView runState worldState =
-    let elapsed = runState.elapsed
     match worldState with
     | Playing (map, player, monsters) ->
         [
@@ -133,16 +132,15 @@ let getView runState worldState =
 
             yield!
                 [
-                    // yield! monsters |> List.map (fun m -> 
-                    //     let monsterFrame = frameFor elapsed m.state m.facing
-                    //     let monsterPos = currentPosition runState m
-                    //     let rx, ry = relativeToPlayer playerPos monsterPos
-                    //     let rx, ry = rx - (monsterwidth - tilewidth)/2, ry - (monsterheight - tileheight)/2 - tileheight
-                    //     let monsterRenderRect = rx, ry, monsterwidth, monsterheight
-                    //     monsterPos, MappedImage ("minotaur", monsterFrame, monsterRenderRect, Color.White))
+                    yield! monsters |> List.map (fun monster -> 
+                        let monsterPos = currentWorldPos runState monster
+                        let (mx, my) = relativeTo player runState monsterPos
+                        let rect = renderRect (mx, my - (tileheight/4)) (monsterwidth, monsterheight)
+                        let monsterFrame = frameFor monster runState
+                        monster.position, MappedImage ("minotaur", monsterFrame, rect, Color.White))
                     
-                    let playerFrame = sprintf "%s_A" <| frameFor elapsed player.state player.facing
-                    yield (originx, originy), MappedImage ("rogue", playerFrame, playerRenderRect, Color.White)
+                    let playerFrame = sprintf "%s_A" <| frameFor player runState
+                    yield player.position, MappedImage ("rogue", playerFrame, playerRenderRect, Color.White)
                 ] |> Seq.sortBy (fun ((x, y), _) -> y, x) |> Seq.map (fun (_, image) -> image)
             
             let mx, my = runState.mouse.position
