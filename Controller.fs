@@ -63,8 +63,10 @@ let getNewPlayerPath map monsters runState (x, y) =
     else
         None
 
-let updateEntityPosition runState pathFinder entity =
+let updateEntityPosition runState monsters pathFinder entity =
     match entity.path with
+    | next::_ when Seq.exists (fun m -> m.position = next) monsters ->
+        { entity with path = [] }
     | next::rest when runState.elapsed - entity.moveStart >= timeBetweenTiles ->
         let newPath = 
             match pathFinder runState next with
@@ -98,7 +100,7 @@ let updateEntityState entity =
         | _ -> { entity with state = Standing entity.moveStart }
 
 let advancePlayer map monsters runState =
-    updateEntityPosition runState (getNewPlayerPath map monsters)
+    updateEntityPosition runState monsters (getNewPlayerPath map monsters)
     >> updateEntityFacing 
     >> updateEntityState
 
