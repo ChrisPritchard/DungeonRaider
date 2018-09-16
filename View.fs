@@ -67,16 +67,15 @@ let currentWorldPos runState entity =
         wx + int (float dx * distance), wy + int (float dy * distance)
     | _ -> wx, wy
 
-
-let relativeTo entity (wx, wy) =
-    let rx, ry = entity.position |> worldPos
+let relativeTo entity runState (wx, wy) =
+    let rx, ry = entity |> currentWorldPos runState
     let diffx, diffy = rx - wx, ry - wy
     originx - diffx, originy - diffy
 
 let isVisible (x, y, width, height) =
     x + width/2 > 0 
     && x - width/2 < screenWidth 
-    && y - height > 0 
+    && y > 0 
     && y - height < screenHeight
 
 let renderRect (wx, wy) (width, height) = 
@@ -87,10 +86,10 @@ let renderRect (wx, wy) (width, height) =
 
 let playerRenderRect = midx - playerwidth/2, midy - playerheight/2, playerwidth, playerheight
 
-let tiles player map = 
+let tiles player runState map = 
     map 
     |> List.mapi (fun i (Tile (x, y, kind, adjacency)) -> 
-        let rx, ry = (x, y) |> worldPos |> relativeTo player
+        let rx, ry = (x, y) |> worldPos |> relativeTo player runState
         i, kind, adjacency, rx, ry)
     |> List.filter (fun (_, _, _, rx, ry) -> 
         isVisible (rx, ry, tilewidth, tileheight * 2))
@@ -130,7 +129,7 @@ let getView runState worldState =
     match worldState with
     | Playing (map, player, monsters) ->
         [
-            yield! tiles player map
+            yield! tiles player runState map
 
             yield!
                 [
