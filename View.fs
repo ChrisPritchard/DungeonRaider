@@ -54,7 +54,7 @@ let wallFor adjacency index =
             Some <| sprintf "wall_%i" (index % 4 + 1)
 
 let relativeToPlayer (playerx, playery) (otherx, othery) =
-    (midx + int otherx) - int playerx - tilewidth/2, (midy + int othery) - int playery
+    (midx - int playerx - tilewidth/2) + int otherx, (midy - int playery) + int othery
 
 let tiles playerPosition showGrid map = 
     map 
@@ -96,7 +96,7 @@ let frameFor elapsed state facing =
 
 let playerRenderRect = midx - playerwidth/2, midy - playerheight/2, playerwidth, playerheight
 
-let realPosition runState entity = 
+let currentPosition runState entity = 
     let x, y = entity.position
     let rx, ry = x * tilewidth |> float, y * tileheight |> float
     match entity.path with
@@ -110,7 +110,7 @@ let getView runState worldState =
     let elapsed = runState.elapsed
     match worldState with
     | Playing (map, player, monsters) ->
-        let playerPos = realPosition runState player
+        let playerPos = currentPosition runState player
         [
             yield! tiles playerPos true map
 
@@ -118,8 +118,9 @@ let getView runState worldState =
                 [
                     yield! monsters |> List.map (fun m -> 
                         let monsterFrame = frameFor elapsed m.state m.facing
-                        let monsterPos = realPosition runState m
+                        let monsterPos = currentPosition runState m
                         let rx, ry = relativeToPlayer playerPos monsterPos
+                        let rx, ry = rx - (monsterwidth - tilewidth)/2, ry - (monsterheight - tileheight)/2 - tileheight
                         let monsterRenderRect = rx, ry, monsterwidth, monsterheight
                         monsterPos, MappedImage ("minotaur", monsterFrame, monsterRenderRect, Color.White))
                     
