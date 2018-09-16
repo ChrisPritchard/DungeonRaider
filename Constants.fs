@@ -5,6 +5,9 @@ open Microsoft.Xna.Framework.Input
 let screenWidth, screenHeight = 800, 800
 let quitKey = Keys.Escape
 
+let showFPS = false
+let showGrid = true
+
 let midx, midy = screenWidth / 2, screenHeight / 2
 
 let dungeonSize, leafSize, roomSize, minCorridorLength = 30, 7, 5, 3

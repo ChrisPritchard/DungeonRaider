@@ -53,34 +53,60 @@ let wallFor adjacency index =
         else
             Some <| sprintf "wall_%i" (index % 4 + 1)
 
-let relativeToPlayer (playerx, playery) (otherx, othery) =
-    (midx - int playerx - tilewidth/2) + int otherx, (midy - int playery) + int othery
+let originx, originy = midx, midy - playerheight/2
 
-let tiles playerPosition showGrid map = 
+let worldPos (tx, ty) = tx * tilewidth, ty * tileheight
+
+let currentWorldPos runState entity = 
+    let wx, wy = entity.position |> worldPos
+    match entity.path with
+    | nextPos::_ when entity.moveStart <> 0. ->
+        let distance = (runState.elapsed - entity.moveStart) / timeBetweenTiles
+        let nx, ny = nextPos |> worldPos
+        let dx, dy = nx - wx, ny - wy
+        wx + int (float dx * distance), wy + int (float dy * distance)
+    | _ -> wx, wy
+
+
+let relativeTo entity (wx, wy) =
+    let rx, ry = entity.position |> worldPos
+    let diffx, diffy = rx - wx, ry - wy
+    originx - diffx, originy - diffy
+
+let isVisible (x, y, width, height) =
+    x + width > 0 && x < screenWidth && y + height > 0 && y < screenHeight
+
+let renderRect (wx, wy) (width, height) = wx - width / 2, wy - height, width, height
+
+let tiles player map = 
     map 
     |> List.mapi (fun i (Tile (x, y, kind, adjacency)) -> 
-        let rx, ry = relativeToPlayer playerPosition (x * tilewidth |> float, y * tileheight |> float)
+        let rx, ry = (x, y) |> worldPos |> relativeTo player
         i, kind, adjacency, rx, ry)
     |> List.filter (fun (_, _, _, rx, ry) -> 
-        rx + tilewidth > 0 && rx < screenWidth && ry + tileheight > 0 && ry - tileheight < screenWidth)
+        isVisible (rx, ry, tilewidth, tileheight * 2))
     |> List.map (fun (i, kind, adjacency, rx, ry) -> 
         match kind with
         | Block -> 
             match wallFor adjacency i with
             | Some wall -> 
-                MappedImage ("dungeon", wall, (rx, ry - tileheight, tilewidth, tileheight * 2), Color.White)
+                let rect = renderRect (rx, ry - tileheight) (tilewidth, tileheight * 2)
+                MappedImage ("dungeon", wall, rect, Color.White)
             | _ ->
-                MappedImage ("dungeon", sprintf "ceiling_%s" (keyForAdjacency adjacency Block i), (rx, ry, tilewidth, tileheight), Color.White)
+                let rect = renderRect (rx, ry) (tilewidth, tileheight)
+                MappedImage ("dungeon", sprintf "ceiling_%s" (keyForAdjacency adjacency Block i), rect, Color.White)
         | StairsUp ->
-            MappedImage ("dungeon", "wall_stairsup", (rx, ry - tileheight, tilewidth, tileheight * 2), Color.White)
+            let rect = renderRect (rx, ry - tileheight) (tilewidth, tileheight * 2)
+            MappedImage ("dungeon", "wall_stairsup", rect, Color.White)
         | StairsDown index ->
-            MappedImage ("dungeon", sprintf "stairsdown_%i" (index + 1), (rx, ry, tilewidth, tileheight), Color.White)
+            let rect = renderRect (rx, ry) (tilewidth, tileheight)
+            MappedImage ("dungeon", sprintf "stairsdown_%i" (index + 1), rect, Color.White)
         | other -> 
             let rect = 
                 if showGrid then 
-                    (rx + 1, ry + 1, tilewidth - 2, tileheight - 2) 
+                    renderRect (rx + 1, ry + 1) (tilewidth - 2, tileheight - 2)
                 else 
-                    (rx, ry, tilewidth, tileheight)
+                    renderRect (rx, ry) (tilewidth, tileheight)
             MappedImage ("dungeon", sprintf "floor_%s" (keyForAdjacency adjacency other i), rect, Color.White))
 
 let frameFor elapsed state facing = 
@@ -96,36 +122,25 @@ let frameFor elapsed state facing =
 
 let playerRenderRect = midx - playerwidth/2, midy - playerheight/2, playerwidth, playerheight
 
-let currentPosition runState entity = 
-    let x, y = entity.position
-    let rx, ry = x * tilewidth |> float, y * tileheight |> float
-    match entity.path with
-    | (nx, ny)::_ when entity.moveStart <> 0. ->
-        let distance = (runState.elapsed - entity.moveStart) / timeBetweenTiles
-        let dx, dy = nx - x |> float, ny - y |> float
-        rx + (dx * distance * float tilewidth), ry + (dy * distance * float tileheight)
-    | _ -> rx, ry
-
 let getView runState worldState =
     let elapsed = runState.elapsed
     match worldState with
     | Playing (map, player, monsters) ->
-        let playerPos = currentPosition runState player
         [
-            yield! tiles playerPos true map
+            yield! tiles player map
 
             yield!
                 [
-                    yield! monsters |> List.map (fun m -> 
-                        let monsterFrame = frameFor elapsed m.state m.facing
-                        let monsterPos = currentPosition runState m
-                        let rx, ry = relativeToPlayer playerPos monsterPos
-                        let rx, ry = rx - (monsterwidth - tilewidth)/2, ry - (monsterheight - tileheight)/2 - tileheight
-                        let monsterRenderRect = rx, ry, monsterwidth, monsterheight
-                        monsterPos, MappedImage ("minotaur", monsterFrame, monsterRenderRect, Color.White))
+                    // yield! monsters |> List.map (fun m -> 
+                    //     let monsterFrame = frameFor elapsed m.state m.facing
+                    //     let monsterPos = currentPosition runState m
+                    //     let rx, ry = relativeToPlayer playerPos monsterPos
+                    //     let rx, ry = rx - (monsterwidth - tilewidth)/2, ry - (monsterheight - tileheight)/2 - tileheight
+                    //     let monsterRenderRect = rx, ry, monsterwidth, monsterheight
+                    //     monsterPos, MappedImage ("minotaur", monsterFrame, monsterRenderRect, Color.White))
                     
                     let playerFrame = sprintf "%s_A" <| frameFor elapsed player.state player.facing
-                    yield playerPos, MappedImage ("rogue", playerFrame, playerRenderRect, Color.White)
+                    yield (originx, originy), MappedImage ("rogue", playerFrame, playerRenderRect, Color.White)
                 ] |> Seq.sortBy (fun ((x, y), _) -> y, x) |> Seq.map (fun (_, image) -> image)
             
             let mx, my = runState.mouse.position
