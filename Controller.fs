@@ -38,9 +38,10 @@ let astarConfig map entities goal : AStar.Config<int * int> =
     let isClear x y = 
         isOpen x y map 
         && (goal = (x, y)
-        || entities |> Seq.forall (fun m -> 
-            m.position <> (x, y)
-            && match m.path with next::_ -> next <> (x, y) | _ -> true))
+        || entities 
+            |> Seq.exists (fun m -> 
+                m.position = (x, y) || match m.path with next::_ -> next = (x, y) | _ -> false)
+            |> not)
     let neighbours (x, y) =
         neighbourDeltas 
         |> Seq.filter(fun (dx, dy) ->
