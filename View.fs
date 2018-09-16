@@ -53,7 +53,7 @@ let wallFor adjacency index =
         else
             Some <| sprintf "wall_%i" (index % 4 + 1)
 
-let originx, originy = midx, midy + playerheight/2
+let originx, originy = midx, midy + playerheight*2/3
 
 let worldPos (tx, ty) = tx * tilewidth, ty * tileheight
 
