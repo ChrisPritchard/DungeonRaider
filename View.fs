@@ -132,7 +132,7 @@ let getView runState worldState =
                     yield! monsters |> List.map (fun monster -> 
                         let monsterPos = currentWorldPos runState monster
                         let mx, my = relativeTo player runState monsterPos
-                        let rect = renderRect (mx, my - (tileheight/4)) (monsterwidth, monsterheight)
+                        let rect = renderRect (mx, my - (tileheight/4)) monstersize
                         let monsterFrame = frameFor monster runState
                         monster.position, MappedImage ("minotaur", monsterFrame, rect, Color.White))
                     
@@ -142,5 +142,7 @@ let getView runState worldState =
             
             let mx, my = runState.mouse.position
             yield Image ("pointer", (mx, my, 20, 20), Color.White)
-            yield Text ("default", sprintf "%i, %i" (mx - midx) (my - midy), (20, 20), TopLeft, 0.5, Color.White)
+
+            if showPlayerPos then
+                yield Text ("default", sprintf "%i, %i" (mx - midx) (my - midy), (20, 20), TopLeft, 0.5, Color.White)
         ]

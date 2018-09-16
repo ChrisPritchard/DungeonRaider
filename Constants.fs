@@ -6,7 +6,8 @@ let screenWidth, screenHeight = 800, 800
 let quitKey = Keys.Escape
 
 let showFPS = false
-let showGrid = true
+let showGrid = false
+let showPlayerPos = false
 
 let midx, midy = screenWidth / 2, screenHeight / 2
 
