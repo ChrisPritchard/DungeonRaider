@@ -26,15 +26,21 @@ let isOpen x y map =
         | Room | Door | Corridor -> true
         | _ -> false
 
+let neighbourDeltas = 
+    [-1..1] |> Seq.collect (fun dx ->
+    [-1..1] |> Seq.filter (fun dy -> dy <> dx || dy <> 0) 
+    |> Seq.map (fun ny -> dx, ny))
+    |> Seq.toList
+
 let astarConfig map : AStar.Config<int * int> =
     let neighbours (x, y) =
-        let found = 
-            [-1..1] |> List.collect (fun nx ->
-            [-1..1] |> List.filter (fun ny -> ny <> nx || ny <> 0) |> List.map (fun ny -> x + nx, y + ny))
-        found |> Seq.filter (fun (nx, ny) -> 
-            nx > 0 && ny > 0 &&
-            nx < dungeonSize && ny < dungeonSize &&
-            isOpen nx ny map)
+        neighbourDeltas 
+        |> Seq.filter(fun (dx, dy) ->
+            if abs dx + abs dy = 2 then
+                isOpen x (dy + y) map && isOpen (dx + x) y map
+            else true)
+        |> Seq.map (fun (dx, dy) -> x + dx, y + dy)
+        |> Seq.filter (fun (nx, ny) -> isOpen nx ny map)
     let gScore (x1, y1) (x2, y2) = 
         if (abs (x2 - x1) + abs (y2 - y1)) = 2 then 1.4 else 1.
     let fScore (x, y) (gx, gy) = 
