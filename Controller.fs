@@ -9,14 +9,16 @@ let getTile x y map =
     if x < 0 || y < 0 || x >= dungeonSize || y >= dungeonSize then None
     else Some <| List.item (x * dungeonSize + y) map
 
-let mouseTile x y runState = 
-    let mx, my = runState.mouse.position
-    let relx, rely = midx - mx, midy - my
-
-    let tilex, tiley = 
-        (if relx < 0 then relx - tilewidth/2 else relx + tilewidth/2) / tilewidth, 
-        if rely < 0 then float rely / float tileheight |> floor |> int else rely / tileheight
-    x - tilex, y - tiley - 1
+let tryGetMouseTile playerPosition runState = 
+    if not <| isMousePressed (true, false) runState then None
+    else
+        let mx, my = runState.mouse.position
+        let relx, rely = midx - mx, midy - my
+        let tilex, tiley = 
+            (if relx < 0 then relx - tilewidth/2 else relx + tilewidth/2) / tilewidth, 
+            if rely < 0 then float rely / float tileheight |> floor |> int else rely / tileheight
+        let x, y = playerPosition
+        Some <| (x - tilex, y - tiley - 1)
 
 let isOpen x y map =
     match getTile x y map with
@@ -54,14 +56,12 @@ let astarConfig map entities goal : AStar.Config<int * int> =
     { neighbours = neighbours; gCost = gScore; fCost = fScore }
    
 let getNewPlayerPath map monsters runState (x, y) =
-    if isMousePressed (true, false) runState then
-        let mx, my = mouseTile x y runState
+    tryGetMouseTile (x, y) runState 
+    |> Option.bind(fun (mx, my) -> 
         if isOpen mx my map then 
             AStar.search (x, y) (mx, my) (astarConfig map monsters (mx, my)) |> Option.bind (Seq.rev >> Seq.toList >> Some)
         else
-            None
-    else
-        None
+            None)
 
 let updateEntityPosition runState monsters pathFinder entity =
     match entity.path with
