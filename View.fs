@@ -94,24 +94,21 @@ let tiles player runState map =
     |> List.filter (fun (_, _, _, rx, ry) -> 
         isVisible (rx, ry, tilewidth, tileheight * 2))
     |> List.map (fun (i, kind, adjacency, rx, ry) -> 
+        let normalHeight = renderRect (rx, ry) (tilewidth, tileheight)
+        let doubleHeight = renderRect (rx, ry) (tilewidth, tileheight * 2)
         match kind with
         | Block -> 
             match wallFor adjacency i with
             | Some wall -> 
-                let rect = renderRect (rx, ry) (tilewidth, tileheight * 2)
-                MappedImage ("dungeon", wall, rect, Color.White)
+                MappedImage ("dungeon", wall, doubleHeight, Color.White)
             | _ ->
-                let rect = renderRect (rx, ry) (tilewidth, tileheight)
-                MappedImage ("dungeon", sprintf "ceiling_%s" (keyForAdjacency adjacency Block i), rect, Color.White)
+                MappedImage ("dungeon", sprintf "ceiling_%s" (keyForAdjacency adjacency Block i), normalHeight, Color.White)
         | StairsUp ->
-            let rect = renderRect (rx, ry) (tilewidth, tileheight * 2)
-            MappedImage ("dungeon", "wall_stairsup", rect, Color.White)
+            MappedImage ("dungeon", "wall_stairsup", doubleHeight, Color.White)
         | StairsDown index ->
-            let rect = renderRect (rx, ry) (tilewidth, tileheight)
-            MappedImage ("dungeon", sprintf "stairsdown_%i" (index + 1), rect, Color.White)
+            MappedImage ("dungeon", sprintf "stairsdown_%i" (index + 1), normalHeight, Color.White)
         | other -> 
-            let rect = renderRect (rx, ry) (tilewidth, tileheight)
-            MappedImage ("dungeon", sprintf "floor_%s" (keyForAdjacency adjacency other i), rect, Color.White))
+            MappedImage ("dungeon", sprintf "floor_%s" (keyForAdjacency adjacency other i), normalHeight, Color.White))
 
 let frameFor entity runState = 
     let frameFor start = (((runState.elapsed - start) % (10. * frameSpeed)) / frameSpeed) + 1. |> floor |> int
