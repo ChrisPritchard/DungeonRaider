@@ -32,12 +32,13 @@ let neighbourDeltas =
     |> Seq.map (fun ny -> dx, ny))
     |> Seq.toList
 
-let astarConfig map entities : AStar.Config<int * int> =
+let astarConfig map entities goal : AStar.Config<int * int> =
     let isClear x y = 
         isOpen x y map 
-        && entities |> Seq.forall (fun m -> 
+        && (goal = (x, y)
+        || entities |> Seq.forall (fun m -> 
             m.position <> (x, y)
-            && match m.path with next::_ -> next <> (x, y) | _ -> true) 
+            && match m.path with next::_ -> next <> (x, y) | _ -> true))
     let neighbours (x, y) =
         neighbourDeltas 
         |> Seq.filter(fun (dx, dy) ->
@@ -56,7 +57,7 @@ let getNewPlayerPath map monsters runState (x, y) =
     if isMousePressed (true, false) runState then
         let mx, my = mouseTile x y runState
         if isOpen mx my map then 
-            AStar.search (x, y) (mx, my) (astarConfig map monsters) |> Option.bind (Seq.rev >> Seq.toList >> Some)
+            AStar.search (x, y) (mx, my) (astarConfig map monsters (mx, my)) |> Option.bind (Seq.rev >> Seq.toList >> Some)
         else
             None
     else
