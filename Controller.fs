@@ -108,7 +108,7 @@ let newLevel () =
                 | _ -> None)
 
     let map = dungeon dungeonSize leafSize roomSize minCorridorLength
-    let (px,py) = startPos map
+    let px, py = startPos map
     let player = { state = Standing 0.; facing = Left; position = (px, py); path = []; moveStart = 0. }
     let monster = { state = Standing 0.; facing = Left; position = (px + 2, py + 2); path = []; moveStart = 0. }
     Playing (map, player, [monster]) |> Some

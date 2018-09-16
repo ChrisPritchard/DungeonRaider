@@ -14,7 +14,7 @@ let dungeonSize, leafSize, roomSize, minCorridorLength = 30, 7, 5, 3
 
 let tilewidth, tileheight = 48, 48
 let playerwidth, playerheight = tilewidth * 3/2, tileheight * 3/2
-let monsterwidth, monsterheight = playerwidth * 3/2, playerheight * 3/2
+let monstersize = playerwidth * 3/2, playerheight * 3/2
 
 let frameSpeed = 75.
 let timeBetweenTiles = 250.
