@@ -53,7 +53,7 @@ let wallFor adjacency index =
         else
             Some <| sprintf "wall_%i" (index % 4 + 1)
 
-let originx, originy = midx, midy - playerheight/2
+let originx, originy = midx, midy + playerheight/2
 
 let worldPos (tx, ty) = tx * tilewidth, ty * tileheight
 
@@ -74,9 +74,18 @@ let relativeTo entity (wx, wy) =
     originx - diffx, originy - diffy
 
 let isVisible (x, y, width, height) =
-    x + width > 0 && x < screenWidth && y + height > 0 && y < screenHeight
+    x + width/2 > 0 
+    && x - width/2 < screenWidth 
+    && y - height > 0 
+    && y - height < screenHeight
 
-let renderRect (wx, wy) (width, height) = wx - width / 2, wy - height, width, height
+let renderRect (wx, wy) (width, height) = 
+    if showGrid then
+        wx - width / 2 + 1, wy - height + 1, width - 2, height - 2
+    else
+        wx - width / 2, wy - height, width, height
+
+let playerRenderRect = midx - playerwidth/2, midy - playerheight/2, playerwidth, playerheight
 
 let tiles player map = 
     map 
@@ -90,23 +99,19 @@ let tiles player map =
         | Block -> 
             match wallFor adjacency i with
             | Some wall -> 
-                let rect = renderRect (rx, ry - tileheight) (tilewidth, tileheight * 2)
+                let rect = renderRect (rx, ry) (tilewidth, tileheight * 2)
                 MappedImage ("dungeon", wall, rect, Color.White)
             | _ ->
                 let rect = renderRect (rx, ry) (tilewidth, tileheight)
                 MappedImage ("dungeon", sprintf "ceiling_%s" (keyForAdjacency adjacency Block i), rect, Color.White)
         | StairsUp ->
-            let rect = renderRect (rx, ry - tileheight) (tilewidth, tileheight * 2)
+            let rect = renderRect (rx, ry) (tilewidth, tileheight * 2)
             MappedImage ("dungeon", "wall_stairsup", rect, Color.White)
         | StairsDown index ->
             let rect = renderRect (rx, ry) (tilewidth, tileheight)
             MappedImage ("dungeon", sprintf "stairsdown_%i" (index + 1), rect, Color.White)
         | other -> 
-            let rect = 
-                if showGrid then 
-                    renderRect (rx + 1, ry + 1) (tilewidth - 2, tileheight - 2)
-                else 
-                    renderRect (rx, ry) (tilewidth, tileheight)
+            let rect = renderRect (rx, ry) (tilewidth, tileheight)
             MappedImage ("dungeon", sprintf "floor_%s" (keyForAdjacency adjacency other i), rect, Color.White))
 
 let frameFor elapsed state facing = 
@@ -119,8 +124,6 @@ let frameFor elapsed state facing =
     | Striking start -> sprintf "strike%s%i" facing <| frameFor start
     | Dying start -> sprintf "die%s%i" facing <| frameFor start
     | Dead -> sprintf "die%s10" facing
-
-let playerRenderRect = midx - playerwidth/2, midy - playerheight/2, playerwidth, playerheight
 
 let getView runState worldState =
     let elapsed = runState.elapsed
