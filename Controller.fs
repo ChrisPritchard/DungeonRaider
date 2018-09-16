@@ -34,14 +34,16 @@ let neighbourDeltas =
     |> Seq.map (fun ny -> dx, ny))
     |> Seq.toList
 
+let notExists f s = Seq.exists f s |> not
+
 let astarConfig map entities goal : AStar.Config<int * int> =
     let isClear x y = 
         isOpen x y map 
         && (goal = (x, y)
         || entities 
-            |> Seq.exists (fun m -> 
-                m.position = (x, y) || match m.path with next::_ -> next = (x, y) | _ -> false)
-            |> not)
+            |> notExists (fun m -> 
+                m.position = (x, y) 
+                || match m.path with next::_ -> next = (x, y) | _ -> false))
     let neighbours (x, y) =
         neighbourDeltas 
         |> Seq.filter(fun (dx, dy) ->
