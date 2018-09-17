@@ -152,20 +152,8 @@ let newLevel () =
 
     let map = dungeon dungeonSize leafSize roomSize minCorridorLength
     let px, py = startPos map
-    let player = { 
-        state = Standing 0.
-        facing = Left
-        position = (px, py)
-        timeBetweenTiles = 250.
-        health = 10
-        events = [] }
-    let monster = { 
-        state = Standing 0.
-        facing = Left
-        position = (px + 2, py + 2)
-        timeBetweenTiles = 350.
-        health = 5
-        events = [] }
+    let player = newRogue (px, py)
+    let monster = newMinotaur (px + 3, py + 3)
     Playing (map, player, [monster]) |> Some
 
 let applyMonsterHits player monsters runState = 

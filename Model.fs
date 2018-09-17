@@ -24,3 +24,23 @@ and EntityEvent = Struck of Entity
 
 type GameModel = 
     | Playing of map:(Tile list) * player:Entity * monsters:(Entity list)
+
+let newRogue position =
+    { 
+        state = Standing 0.
+        facing = Left
+        position = position
+        timeBetweenTiles = 250.
+        health = 10
+        events = [] 
+    }
+
+let newMinotaur position =
+    {
+        state = Standing 0.
+        facing = Left
+        position = position
+        timeBetweenTiles = 350.
+        health = 5
+        events = []
+    }
