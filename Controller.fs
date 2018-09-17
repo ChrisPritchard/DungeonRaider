@@ -68,12 +68,14 @@ let getNewPlayerPath map monsters runState playerPosition =
             None)
 
 let seekOutPlayer map monsters player _ monsterPosition =
-    let otherMonsters = monsters |> Seq.filter (fun m -> m.position <> monsterPosition)
-    let config = astarConfig map otherMonsters monsterPosition
-    if config.fCost monsterPosition player.position > monsterSightRange then None
+    if player.health = 0 then None
     else
-        AStar.search monsterPosition player.position config 
-        |> Option.bind (Seq.rev >> Seq.skip 1 >> Seq.toList >> Some)
+        let otherMonsters = monsters |> Seq.filter (fun m -> m.position <> monsterPosition)
+        let config = astarConfig map otherMonsters monsterPosition
+        if config.fCost monsterPosition player.position > monsterSightRange then None
+        else
+            AStar.search monsterPosition player.position config 
+            |> Option.bind (Seq.rev >> Seq.skip 1 >> Seq.toList >> Some)
 
 let advanceEntity runState enemies pathFinder entity =
     let elapsed = runState.elapsed
@@ -166,14 +168,29 @@ let newLevel () =
         events = [] }
     Playing (map, player, [monster]) |> Some
 
+let advancePlaying runState map player monsters = 
+    let livingMonsters = List.filter (fun m -> m.health > 0) monsters
+    let newPlayer = advancePlayer map livingMonsters runState player
+    let newMonsters = monsters |> List.map (advanceMonster map livingMonsters newPlayer runState)
+    
+    let playerHits = 
+        newMonsters 
+            |> Seq.collect (fun m -> 
+                m.events |> Seq.filter (fun evt -> 
+                    match evt with Struck enemy when enemy = player -> true | _ -> false))
+            |> Seq.length
+    let finalPlayer =
+        if playerHits >= player.health then { newPlayer with health = 0; state = Dying runState.elapsed }
+        else if playerHits > 0 then { newPlayer with health = player.health - playerHits; state = Hit runState.elapsed }
+        else newPlayer
+
+    Playing (map, finalPlayer, newMonsters) |> Some
+
 let advanceGame runState worldState =
     match worldState with
     | _ when wasJustPressed quitKey runState -> None
     | None -> 
         newLevel ()
     | Some (Playing (map, player, monsters)) -> 
-        let livingMonsters = List.filter (fun m -> m.health > 0) monsters
-        let newPlayer = advancePlayer map livingMonsters runState player
-        let newMonsters = monsters |> List.map (advanceMonster map livingMonsters newPlayer runState)
-        Playing (map, newPlayer, newMonsters) |> Some
+        advancePlaying runState map player monsters
     | other -> other
