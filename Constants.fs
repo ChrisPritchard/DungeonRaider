@@ -18,4 +18,5 @@ let playerwidth, playerheight = tilewidth * 3/2, tileheight * 3/2
 let monstersize = playerwidth * 3/2, playerheight * 3/2
 
 let frameSpeed = 75.
+let animationTime = frameSpeed * 10.
 let timeBetweenTiles = 250.
