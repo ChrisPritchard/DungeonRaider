@@ -61,6 +61,7 @@ let currentWorldPos runState entity =
     let wx, wy = entity.position |> worldPos
     match entity.state with
     | Walking (startTime, path) ->
+        let timeBetweenTiles = entity.timeBetweenTiles
         let moveTime = (runState.elapsed - startTime) % timeBetweenTiles
         let nextPos = List.head path
         let distance = moveTime / timeBetweenTiles

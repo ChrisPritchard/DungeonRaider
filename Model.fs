@@ -7,6 +7,7 @@ type Entity = {
         state: EntityState
         facing: Facing
         position: int * int
+        timeBetweenTiles: float
         health: int
         events: EntityEvent list
     }

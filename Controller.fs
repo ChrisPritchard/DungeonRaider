@@ -58,21 +58,29 @@ let astarConfig map entities goal : AStar.Config<int * int> =
         sqrt ((float gx - float x)**2. + (float gy - float y)**2.)
     { neighbours = neighbours; gCost = gScore; fCost = fScore }
    
-let getNewPlayerPath map monsters runState (x, y) =
-    tryGetMouseTile (x, y) runState 
+let getNewPlayerPath map monsters runState playerPosition =
+    tryGetMouseTile playerPosition runState 
     |> Option.bind(fun (mx, my) -> 
         if isOpen mx my map then 
-            AStar.search (x, y) (mx, my) (astarConfig map monsters (mx, my)) 
+            AStar.search playerPosition (mx, my) (astarConfig map monsters (mx, my)) 
             |> Option.bind (Seq.rev >> Seq.skip 1 >> Seq.toList >> Some)
         else
             None)
+
+let seekOutPlayer map monsters player _ monsterPosition =
+    let otherMonsters = monsters |> Seq.filter (fun m -> m.position <> monsterPosition)
+    let config = astarConfig map otherMonsters monsterPosition
+    if config.fCost monsterPosition player.position > monsterSightRange then None
+    else
+        AStar.search monsterPosition player.position config 
+        |> Option.bind (Seq.rev >> Seq.skip 1 >> Seq.toList >> Some)
 
 let advanceEntity runState enemies pathFinder entity =
     let elapsed = runState.elapsed
     match entity.state with
     | Walking (startTime, path) ->
         match path with
-        | next::rest when elapsed - startTime > timeBetweenTiles ->
+        | next::rest when elapsed - startTime > entity.timeBetweenTiles ->
             let newPath = 
                 match pathFinder runState next with
                 | Some path -> path 
@@ -119,8 +127,8 @@ let advancePlayer map monsters runState player =
         |> advanceEntity runState monsters pathFinder
         |> updateEntityFacing 
 
-let advanceMonster _ player runState monster = 
-    let pathFinder _ _ = None
+let advanceMonster map monsters player runState monster = 
+    let pathFinder = seekOutPlayer map monsters player
     let wasHit = player.events |> Seq.exists (fun evt -> 
         match evt with Struck target when target = monster -> true | _ -> false)
     if wasHit && monster.health = 1 then
@@ -142,8 +150,20 @@ let newLevel () =
 
     let map = dungeon dungeonSize leafSize roomSize minCorridorLength
     let px, py = startPos map
-    let player = { state = Standing 0.; facing = Left; position = (px, py); health = 10; events = [] }
-    let monster = { state = Standing 0.; facing = Left; position = (px + 2, py + 2); health = 5; events = [] }
+    let player = { 
+        state = Standing 0.
+        facing = Left
+        position = (px, py)
+        timeBetweenTiles = 250.
+        health = 10
+        events = [] }
+    let monster = { 
+        state = Standing 0.
+        facing = Left
+        position = (px + 2, py + 2)
+        timeBetweenTiles = 350.
+        health = 5
+        events = [] }
     Playing (map, player, [monster]) |> Some
 
 let advanceGame runState worldState =
@@ -154,6 +174,6 @@ let advanceGame runState worldState =
     | Some (Playing (map, player, monsters)) -> 
         let livingMonsters = List.filter (fun m -> m.health > 0) monsters
         let newPlayer = advancePlayer map livingMonsters runState player
-        let newMonsters = monsters |> List.map (advanceMonster map newPlayer runState)
+        let newMonsters = monsters |> List.map (advanceMonster map livingMonsters newPlayer runState)
         Playing (map, newPlayer, newMonsters) |> Some
     | other -> other
