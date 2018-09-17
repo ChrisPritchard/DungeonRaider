@@ -7,16 +7,19 @@ type Entity = {
         state: EntityState
         facing: Facing
         position: int * int
+        health: int
+        events: EntityEvent list
     }
 and EntityState =
     | Standing of startTime:float 
     | Gesturing of startTime:float 
     | Walking of startTime:float * path:(int * int) list
-    | Striking of startTime:float * target:Entity
+    | Striking of startTime:float * target:Entity * hasHit:bool
     | Hit of startTime:float
     | Dying of startTime:float 
     | Dead
 and Facing = Left | Right
+and EntityEvent = Struck of Entity
 
 type GameModel = 
     | Playing of map:(Tile list) * player:Entity * monsters:(Entity list)

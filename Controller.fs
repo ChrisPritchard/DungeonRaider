@@ -85,17 +85,21 @@ let advanceEntity runState enemies pathFinder entity =
                     | _ -> Walking (elapsed, newPath) }
         | next::_ ->
             match Seq.tryFind (fun m -> m.position = next) enemies with
-            | Some enemy -> { entity with state = Striking (runState.elapsed, enemy) }
+            | Some enemy -> { entity with state = Striking (runState.elapsed, enemy, false) }
             | _ -> entity
         | _ -> entity
     | Standing _ ->
         match pathFinder runState entity.position with
         | Some path when path <> [] -> { entity with state = Walking (elapsed, path) } 
         | _ -> entity
-    | Striking (startTime, _) when elapsed - startTime > animationTime -> 
+    | Striking (startTime, enemy, false) when elapsed - startTime > animationTime/2. -> 
+        { entity with state = Striking (startTime, enemy, true); events = [Struck enemy] }
+    | Striking (startTime, _, _) when elapsed - startTime > animationTime -> 
         { entity with state = Standing elapsed }
     | Hit startTime when elapsed - startTime > hitTime ->
         { entity with state = Standing elapsed }
+    | Dying startTime when elapsed - startTime > animationTime ->
+        { entity with state = Dead }
     | _ -> entity
 
 let updateEntityFacing entity =
@@ -109,13 +113,24 @@ let updateEntityFacing entity =
             { entity with facing = Right }
     | _ -> entity
 
-let advancePlayer map monsters runState =
+let advancePlayer map monsters runState player =
     let pathFinder = getNewPlayerPath map monsters
-    advanceEntity runState monsters pathFinder
-    >> updateEntityFacing 
+    { player with events = [] } 
+        |> advanceEntity runState monsters pathFinder
+        |> updateEntityFacing 
 
-let advanceMonster map runState monster = 
-    monster
+let advanceMonster _ player runState monster = 
+    let pathFinder _ _ = None
+    let wasHit = player.events |> Seq.exists (fun evt -> 
+        match evt with Struck target when target = monster -> true | _ -> false)
+    if wasHit && monster.health = 1 then
+        { monster with health = 0; state = Dying runState.elapsed }
+    else if wasHit then
+        { monster with health = monster.health - 1; state = Hit runState.elapsed }
+    else
+        { monster with events = [] }
+        |> advanceEntity runState [player] pathFinder
+        |> updateEntityFacing 
 
 let newLevel () =
     let startPos = 
@@ -127,8 +142,8 @@ let newLevel () =
 
     let map = dungeon dungeonSize leafSize roomSize minCorridorLength
     let px, py = startPos map
-    let player = { state = Standing 0.; facing = Left; position = (px, py) }
-    let monster = { state = Standing 0.; facing = Left; position = (px + 2, py + 2) }
+    let player = { state = Standing 0.; facing = Left; position = (px, py); health = 10; events = [] }
+    let monster = { state = Standing 0.; facing = Left; position = (px + 2, py + 2); health = 5; events = [] }
     Playing (map, player, [monster]) |> Some
 
 let advanceGame runState worldState =
@@ -137,7 +152,8 @@ let advanceGame runState worldState =
     | None -> 
         newLevel ()
     | Some (Playing (map, player, monsters)) -> 
-        let newPlayer = advancePlayer map monsters runState player
-        let newMonsters = monsters |> List.map (advanceMonster map runState)
+        let livingMonsters = List.filter (fun m -> m.health > 0) monsters
+        let newPlayer = advancePlayer map livingMonsters runState player
+        let newMonsters = monsters |> List.map (advanceMonster map newPlayer runState)
         Playing (map, newPlayer, newMonsters) |> Some
     | other -> other

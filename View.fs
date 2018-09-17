@@ -119,13 +119,15 @@ let frameFor entity runState =
     | Standing start | Hit start -> sprintf "stand%s%i" facing <| frameFor start
     | Gesturing start -> sprintf "gesture%s%i" facing <| frameFor start
     | Walking (start, _) -> sprintf "walk%s%i" facing <| frameFor start
-    | Striking (start, _) -> sprintf "strike%s%i" facing <| frameFor start
+    | Striking (start, _, _) -> sprintf "strike%s%i" facing <| frameFor start
     | Dying start -> sprintf "die%s%i" facing <| frameFor start
     | Dead -> sprintf "die%s10" facing
 
 let colourFor entity runState =
     match entity.state with
-    | Hit _ -> 
+    | Hit _ ->
+        Color.Red
+    | Dying startTime when runState.elapsed - startTime < hitTime -> 
         Color.Red
     | _ -> Color.White
 
