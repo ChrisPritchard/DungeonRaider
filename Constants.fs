@@ -5,7 +5,7 @@ open Microsoft.Xna.Framework.Input
 let screenWidth, screenHeight = 800, 800
 let quitKey = Keys.Escape
 
-let showFPS = false
+let showFPS = true
 let showGrid = false
 let showPlayerPos = false
 

@@ -72,8 +72,6 @@ let updateEntityPosition runState monsters pathFinder entity =
     match entity.state with
     | Walking (startTime, path) ->
         match path with
-        | next::_ when Seq.exists (fun m -> m.position = next) monsters ->
-            { entity with state = Standing runState.elapsed }
         | next::rest when elapsed - startTime > timeBetweenTiles ->
             let newPath = 
                 match pathFinder runState next with
@@ -85,11 +83,17 @@ let updateEntityPosition runState monsters pathFinder entity =
                     match newPath with 
                     | [] -> Standing elapsed 
                     | _ -> Walking (elapsed, newPath) }
+        | next::_ ->
+            match Seq.tryFind (fun m -> m.position = next) monsters with
+            | Some enemy -> { entity with state = Striking (runState.elapsed, enemy) }
+            | _ -> entity
         | _ -> entity
     | Standing _ ->
         match pathFinder runState entity.position with
-        | Some path -> { entity with state = Walking (elapsed, path) } 
+        | Some path when path <> [] -> { entity with state = Walking (elapsed, path) } 
         | _ -> entity
+    | Striking (startTime, _) when elapsed - startTime > animationTime -> 
+        { entity with state = Standing elapsed }
     | _ -> entity
 
 let updateEntityFacing entity =
@@ -103,27 +107,10 @@ let updateEntityFacing entity =
             { entity with facing = Right }
     | _ -> entity
 
-let updateEntityTarget runState enemies pathFinder entity =
-    let elapsed = runState.elapsed
-    match entity.state with
-    | Striking startTime when elapsed - startTime > animationTime -> 
-        { entity with state = Standing elapsed }
-    | Standing _ ->
-        let target = 
-            pathFinder runState entity.position 
-            |> Option.bind (fun path -> 
-                let next = List.head path
-                enemies |> Seq.tryFind (fun m -> m.position = next))
-        match target with
-        | Some _ -> { entity with state = Striking elapsed } // todo add enemy to attacking
-        | _ -> entity
-    | _ -> entity
-
 let advancePlayer map monsters runState =
     let pathFinder = getNewPlayerPath map monsters
     updateEntityPosition runState monsters pathFinder
     >> updateEntityFacing 
-    >> updateEntityTarget runState monsters pathFinder
 
 let advanceMonster map runState monster = 
     monster
