@@ -59,9 +59,11 @@ let worldPos (tx, ty) = tx * tilewidth, ty * tileheight
 
 let currentWorldPos runState entity = 
     let wx, wy = entity.position |> worldPos
-    match entity.path with
-    | nextPos::_ when entity.moveStart <> 0. ->
-        let distance = (runState.elapsed - entity.moveStart) / timeBetweenTiles
+    match entity.state with
+    | Walking (startTime, path) ->
+        let moveTime = (runState.elapsed - startTime) % timeBetweenTiles
+        let nextPos = List.head path
+        let distance = moveTime / timeBetweenTiles
         let nx, ny = nextPos |> worldPos
         let dx, dy = nx - wx, ny - wy
         wx + int (float dx * distance), wy + int (float dy * distance)
@@ -116,7 +118,7 @@ let frameFor entity runState =
     match entity.state with
     | Standing start -> sprintf "stand%s%i" facing <| frameFor start
     | Gesturing start -> sprintf "gesture%s%i" facing <| frameFor start
-    | Walking start -> sprintf "walk%s%i" facing <| frameFor start
+    | Walking (start, _) -> sprintf "walk%s%i" facing <| frameFor start
     | Striking start -> sprintf "strike%s%i" facing <| frameFor start
     | Dying start -> sprintf "die%s%i" facing <| frameFor start
     | Dead -> sprintf "die%s10" facing

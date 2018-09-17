@@ -43,7 +43,7 @@ let astarConfig map entities goal : AStar.Config<int * int> =
         || entities 
             |> notExists (fun m -> 
                 m.position = (x, y) 
-                || match m.path with next::_ -> next = (x, y) | _ -> false))
+                || match m.state with Walking (_, next::_) -> next = (x, y) | _ -> false))
     let neighbours (x, y) =
         neighbourDeltas 
         |> Seq.filter(fun (dx, dy) ->
@@ -62,50 +62,63 @@ let getNewPlayerPath map monsters runState (x, y) =
     tryGetMouseTile (x, y) runState 
     |> Option.bind(fun (mx, my) -> 
         if isOpen mx my map then 
-            AStar.search (x, y) (mx, my) (astarConfig map monsters (mx, my)) |> Option.bind (Seq.rev >> Seq.toList >> Some)
+            AStar.search (x, y) (mx, my) (astarConfig map monsters (mx, my)) 
+            |> Option.bind (Seq.rev >> Seq.toList >> Some)
         else
             None)
 
 let updateEntityPosition runState monsters pathFinder entity =
-    match entity.path with
-    | next::_ when Seq.exists (fun m -> m.position = next) monsters ->
-        { entity with path = [] }
-    | next::rest when runState.elapsed - entity.moveStart >= timeBetweenTiles ->
-        let newPath = 
-            match pathFinder runState next with
-            | Some (_::path) -> path 
-            | _ -> rest
-        { entity with position = next; path = newPath; moveStart = runState.elapsed }
-    | [] -> 
+    let elapsed = runState.elapsed
+    match entity.state with
+    | Walking (startTime, path) ->
+        match path with
+        | next::_ when Seq.exists (fun m -> m.position = next) monsters ->
+            { entity with state = Standing runState.elapsed }
+        | next::rest when elapsed - startTime > timeBetweenTiles ->
+            let newPath = 
+                match pathFinder runState next with
+                | Some (_::path) -> path 
+                | _ -> rest
+            { entity with 
+                position = next
+                state = 
+                    match newPath with 
+                    | [] -> Standing elapsed 
+                    | _ -> Walking (elapsed, newPath) }
+        | _ -> entity
+    | Standing _ ->
         match pathFinder runState entity.position with
-        | Some (_::path) -> { entity with path = path; moveStart = runState.elapsed } 
+        | Some (_::path) -> { entity with state = Walking (elapsed, path) } 
         | _ -> entity
     | _ -> entity
 
 let updateEntityFacing entity =
     let (x, _) = entity.position
-    match entity.path with
-    | (nx, _)::_ when nx < x -> 
-        { entity with facing = Left }
-    | (nx, _)::_ when nx > x -> 
-        { entity with facing = Right }
+    match entity.state with
+    | Walking (_, path) ->
+        let (nx, _) = List.head path
+        if nx < x then 
+            { entity with facing = Left }
+        else
+            { entity with facing = Right }
     | _ -> entity
 
-let updateEntityState entity =
-    match entity.path with
-    | _::_ when entity.moveStart <> 0. -> 
-        match entity.state with
-        | Walking _ -> entity
-        | _ -> { entity with state = Walking entity.moveStart }
-    | _ ->
-        match entity.state with
-        | Standing _ -> entity
-        | _ -> { entity with state = Standing entity.moveStart }
+// let updateEntityState pathFinder entity =
+//     match entity.path with
+//     | _::_ when entity.moveStart <> 0. -> 
+//         match entity.state with
+//         | Walking _ -> entity
+//         | _ -> { entity with state = Walking entity.moveStart }
+//     | _ ->
+//         match entity.state with
+//         | Standing _ -> entity
+//         | _ -> { entity with state = Standing entity.moveStart }
 
 let advancePlayer map monsters runState =
-    updateEntityPosition runState monsters (getNewPlayerPath map monsters)
+    let pathFinder = getNewPlayerPath map monsters
+    updateEntityPosition runState monsters pathFinder
     >> updateEntityFacing 
-    >> updateEntityState
+    // >> updateEntityState pathFinder
 
 let advanceMonster map runState monster = 
     monster
@@ -120,8 +133,8 @@ let newLevel () =
 
     let map = dungeon dungeonSize leafSize roomSize minCorridorLength
     let px, py = startPos map
-    let player = { state = Standing 0.; facing = Left; position = (px, py); path = []; moveStart = 0. }
-    let monster = { state = Standing 0.; facing = Left; position = (px + 2, py + 2); path = []; moveStart = 0. }
+    let player = { state = Standing 0.; facing = Left; position = (px, py) }
+    let monster = { state = Standing 0.; facing = Left; position = (px + 2, py + 2) }
     Playing (map, player, [monster]) |> Some
 
 let advanceGame runState worldState =

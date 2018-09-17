@@ -7,13 +7,11 @@ type Entity = {
         state: EntityState
         facing: Facing
         position: int * int
-        path: (int * int) list
-        moveStart: float
     }
 and EntityState =
     | Standing of startTime:float 
     | Gesturing of startTime:float 
-    | Walking of startTime:float 
+    | Walking of startTime:float * path:(int * int) list
     | Striking of startTime:float 
     | Dying of startTime:float 
     | Dead
