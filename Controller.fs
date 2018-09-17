@@ -67,7 +67,7 @@ let getNewPlayerPath map monsters runState (x, y) =
         else
             None)
 
-let updateEntityPosition runState monsters pathFinder entity =
+let advanceEntity runState enemies pathFinder entity =
     let elapsed = runState.elapsed
     match entity.state with
     | Walking (startTime, path) ->
@@ -84,7 +84,7 @@ let updateEntityPosition runState monsters pathFinder entity =
                     | [] -> Standing elapsed 
                     | _ -> Walking (elapsed, newPath) }
         | next::_ ->
-            match Seq.tryFind (fun m -> m.position = next) monsters with
+            match Seq.tryFind (fun m -> m.position = next) enemies with
             | Some enemy -> { entity with state = Striking (runState.elapsed, enemy) }
             | _ -> entity
         | _ -> entity
@@ -109,7 +109,7 @@ let updateEntityFacing entity =
 
 let advancePlayer map monsters runState =
     let pathFinder = getNewPlayerPath map monsters
-    updateEntityPosition runState monsters pathFinder
+    advanceEntity runState monsters pathFinder
     >> updateEntityFacing 
 
 let advanceMonster map runState monster = 
