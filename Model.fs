@@ -13,6 +13,7 @@ and EntityState =
     | Gesturing of startTime:float 
     | Walking of startTime:float * path:(int * int) list
     | Striking of startTime:float * target:Entity
+    | Hit of startTime:float
     | Dying of startTime:float 
     | Dead
 and Facing = Left | Right

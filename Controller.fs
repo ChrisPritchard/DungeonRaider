@@ -94,6 +94,8 @@ let advanceEntity runState enemies pathFinder entity =
         | _ -> entity
     | Striking (startTime, _) when elapsed - startTime > animationTime -> 
         { entity with state = Standing elapsed }
+    | Hit startTime when elapsed - startTime > hitTime ->
+        { entity with state = Standing elapsed }
     | _ -> entity
 
 let updateEntityFacing entity =

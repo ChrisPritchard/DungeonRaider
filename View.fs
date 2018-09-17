@@ -116,12 +116,18 @@ let frameFor entity runState =
     let frameFor start = (((runState.elapsed - start) % (10. * frameSpeed)) / frameSpeed) + 1. |> floor |> int
     let facing = match entity.facing with Left -> "left" | _ -> "right"
     match entity.state with
-    | Standing start -> sprintf "stand%s%i" facing <| frameFor start
+    | Standing start | Hit start -> sprintf "stand%s%i" facing <| frameFor start
     | Gesturing start -> sprintf "gesture%s%i" facing <| frameFor start
     | Walking (start, _) -> sprintf "walk%s%i" facing <| frameFor start
     | Striking (start, _) -> sprintf "strike%s%i" facing <| frameFor start
     | Dying start -> sprintf "die%s%i" facing <| frameFor start
     | Dead -> sprintf "die%s10" facing
+
+let colourFor entity runState =
+    match entity.state with
+    | Hit _ -> 
+        Color.Red
+    | _ -> Color.White
 
 let getView runState worldState =
     match worldState with
@@ -136,10 +142,12 @@ let getView runState worldState =
                         let mx, my = relativeTo player runState monsterPos
                         let rect = renderRect (mx, my - (tileheight/4)) monstersize
                         let monsterFrame = frameFor monster runState
-                        monster.position, MappedImage ("minotaur", monsterFrame, rect, Color.White))
+                        let monsterColour = colourFor monster runState
+                        monster.position, MappedImage ("minotaur", monsterFrame, rect, monsterColour))
                     
                     let playerFrame = sprintf "%s_A" <| frameFor player runState
-                    yield player.position, MappedImage ("rogue", playerFrame, playerRenderRect, Color.White)
+                    let playerColour = colourFor player runState
+                    yield player.position, MappedImage ("rogue", playerFrame, playerRenderRect, playerColour)
                 ] |> Seq.sortBy (fun ((x, y), _) -> y, x) |> Seq.map (fun (_, image) -> image)
             
             let mx, my = runState.mouse.position

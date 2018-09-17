@@ -19,4 +19,5 @@ let monstersize = playerwidth * 3/2, playerheight * 3/2
 
 let frameSpeed = 75.
 let animationTime = frameSpeed * 10.
+let hitTime = frameSpeed * 3.
 let timeBetweenTiles = 250.
