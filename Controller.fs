@@ -56,7 +56,7 @@ let astarConfig map entities goal : AStar.Config<int * int> =
     let gScore (x1, y1) (x2, y2) = 
         if (abs (x2 - x1) + abs (y2 - y1)) = 2 then 1.4 else 1.
     let fScore = distanceBetween
-    { neighbours = neighbours; gCost = gScore; fCost = fScore }
+    { neighbours = neighbours; gCost = gScore; fCost = fScore; maxIterations = Some 20 }
    
 let getNewPlayerPath map monsters runState playerPosition =
     tryGetMouseTile playerPosition runState 
