@@ -2,16 +2,16 @@ module Constants
 
 open Microsoft.Xna.Framework.Input
 
-let screenWidth, screenHeight = 800, 800
+let screenWidth, screenHeight = 1600, 1000
 let quitKey = Keys.Escape
 
-let showFPS = false // NOTE: disables the ability to debug
+let showFPS = true // NOTE: disables the ability to debug
 let showGrid = false
 let showPlayerPos = false
 
 let midx, midy = screenWidth / 2, screenHeight / 2
 
-let dungeonSize, leafSize, roomSize, minCorridorLength = 30, 7, 5, 3
+let dungeonSize, leafSize, roomSize, minCorridorLength = 60, 7, 5, 3
 
 let tilewidth, tileheight = 48, 48
 let playerwidth, playerheight = tilewidth * 3/2, tileheight * 3/2
