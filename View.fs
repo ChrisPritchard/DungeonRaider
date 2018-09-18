@@ -98,15 +98,15 @@ let lighting position playerRealPosition =
 let tiles realPlayerPos map = 
     map 
     |> List.mapi (fun i (Tile (x, y, kind, adjacency)) -> 
-        let rx, ry = (x, y) |> worldPos
-        let relx, rely = (rx, ry) |> relativeTo realPlayerPos
-        i, kind, adjacency, relx, rely, rx, ry)
-    |> List.filter (fun (_, _, _, relx, rely, _, _) -> 
+        let world = (x, y) |> worldPos
+        let relative = world |> relativeTo realPlayerPos
+        i, kind, adjacency, world, relative)
+    |> List.filter (fun (_, _, _, _, (relx, rely)) -> 
         isVisible (relx, rely, tilewidth, tileheight * 2))
-    |> List.map (fun (i, kind, adjacency, relx, rely, rx, ry) -> 
-        let normalHeight = renderRect (relx, rely) (tilewidth, tileheight)
-        let doubleHeight = renderRect (relx, rely) (tilewidth, tileheight * 2)
-        let light = lighting (rx, ry) realPlayerPos
+    |> List.map (fun (i, kind, adjacency, world, relative) -> 
+        let normalHeight = renderRect relative (tilewidth, tileheight)
+        let doubleHeight = renderRect relative (tilewidth, tileheight * 2)
+        let light = lighting world realPlayerPos
         match kind with
         | Block -> 
             match wallFor adjacency i with
@@ -152,7 +152,7 @@ let getView runState worldState =
         [
             let realPlayerPos = player |> currentWorldPos runState
             yield! tiles realPlayerPos map
-
+                    
             yield!
                 [
                     yield! monsters |> List.map (fun monster -> 
