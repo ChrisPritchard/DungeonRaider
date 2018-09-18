@@ -172,5 +172,5 @@ let getView runState worldState =
 
             if showPlayerPos then
                 yield Text ("default", sprintf "%i, %i" (mx - midx) (my - midy), (20, 20), TopLeft, 0.5, Color.White)
-            yield Text ("default", sprintf "Player Health: %i" player.health, (20, screenHeight - 80), TopLeft, 0.5, Color.White)
+            yield Text ("default", sprintf "Player Health: %i" player.health, (20, screenHeight - 40), TopLeft, 0.5, Color.White)
         ]
