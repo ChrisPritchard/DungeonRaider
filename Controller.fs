@@ -123,6 +123,21 @@ let updateEntityFacing entity =
             { entity with facing = Right }
     | _ -> entity
 
+let applyHits enemies runState target = 
+    if target.health = 0 then target
+    else
+        let hits = 
+            enemies 
+                |> Seq.collect (fun m -> 
+                    m.events |> Seq.filter (fun evt -> 
+                        match evt with Struck enemy when enemy.position = target.position -> true | _ -> false))
+                |> Seq.length
+        if hits >= target.health then 
+            { target with health = 0; state = Dying runState.elapsed }
+        else if hits > 0 then 
+            { target with health = target.health - hits; state = Hit runState.elapsed }
+        else target
+
 let advancePlayer map monsters runState player =
     let pathFinder = getNewPlayerPath map monsters
     { player with events = [] } 
@@ -131,16 +146,16 @@ let advancePlayer map monsters runState player =
 
 let advanceMonster map monsters player runState monster = 
     let pathFinder = seekOutPlayer map monsters player
-    let wasHit = player.events |> Seq.exists (fun evt -> 
-        match evt with Struck target when target.position = monster.position -> true | _ -> false)
-    if wasHit && monster.health = 1 then
-        { monster with health = 0; state = Dying runState.elapsed }
-    else if wasHit then
-        { monster with health = monster.health - 1; state = Hit runState.elapsed }
-    else
-        { monster with events = [] }
+    { monster with events = [] }
         |> advanceEntity runState [player] pathFinder
         |> updateEntityFacing 
+
+let advancePlaying runState map player monsters = 
+    let livingMonsters = List.filter (fun m -> m.health > 0) monsters
+    let newPlayer = advancePlayer map livingMonsters runState player
+    let newMonsters = monsters |> List.map (advanceMonster map livingMonsters newPlayer runState >> applyHits [newPlayer] runState)
+    let finalPlayer = newPlayer |> applyHits newMonsters runState
+    Playing (map, finalPlayer, newMonsters) |> Some
 
 let newLevel () =
     let startPos = 
@@ -155,28 +170,6 @@ let newLevel () =
     let player = newRogue (px, py)
     let monster = newMinotaur (px + 3, py + 3)
     Playing (map, player, [monster]) |> Some
-
-let applyMonsterHits player monsters runState = 
-    if player.health = 0 then player
-    else
-        let playerHits = 
-            monsters 
-                |> Seq.collect (fun m -> 
-                    m.events |> Seq.filter (fun evt -> 
-                        match evt with Struck enemy when enemy.position = player.position -> true | _ -> false))
-                |> Seq.length
-        if playerHits >= player.health then 
-            { player with health = 0; state = Dying runState.elapsed }
-        else if playerHits > 0 then 
-            { player with health = player.health - playerHits; state = Hit runState.elapsed }
-        else player
-
-let advancePlaying runState map player monsters = 
-    let livingMonsters = List.filter (fun m -> m.health > 0) monsters
-    let newPlayer = advancePlayer map livingMonsters runState player
-    let newMonsters = monsters |> List.map (advanceMonster map livingMonsters newPlayer runState)
-    let finalPlayer = applyMonsterHits newPlayer newMonsters runState
-    Playing (map, finalPlayer, newMonsters) |> Some
 
 let advanceGame runState worldState =
     match worldState with
