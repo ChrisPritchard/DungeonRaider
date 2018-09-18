@@ -132,7 +132,7 @@ let advancePlayer map monsters runState player =
 let advanceMonster map monsters player runState monster = 
     let pathFinder = seekOutPlayer map monsters player
     let wasHit = player.events |> Seq.exists (fun evt -> 
-        match evt with Struck target when target = monster -> true | _ -> false)
+        match evt with Struck target when target.position = monster.position -> true | _ -> false)
     if wasHit && monster.health = 1 then
         { monster with health = 0; state = Dying runState.elapsed }
     else if wasHit then
@@ -163,7 +163,7 @@ let applyMonsterHits player monsters runState =
             monsters 
                 |> Seq.collect (fun m -> 
                     m.events |> Seq.filter (fun evt -> 
-                        match evt with Struck enemy when enemy = player -> true | _ -> false))
+                        match evt with Struck enemy when enemy.position = player.position -> true | _ -> false))
                 |> Seq.length
         if playerHits >= player.health then 
             { player with health = 0; state = Dying runState.elapsed }
