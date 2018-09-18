@@ -90,10 +90,11 @@ let renderRect (wx, wy) (width, height) =
 
 let playerRenderRect = midx - playerwidth/2, midy - playerheight/2, playerwidth, playerheight
 
-let lighting position playerRealPosition = 
-        let distance = distanceBetween position playerRealPosition
+let lighting (x, y) (px, py) = 
+        let distance = distanceBetween (x, y) (px, py)
         if distance > lightRadius then Color.Black
-        else (1. - (distance / lightRadius)) * 255. |> int |> fun i -> new Color (i, i, i)
+        else
+            (1. - (distance / lightRadius)) * 255. |> int |> fun i -> new Color (i, i, i)
 
 let tiles realPlayerPos map = 
     map 
@@ -160,7 +161,11 @@ let getView runState worldState =
                         let mx, my = relativeTo realPlayerPos monsterPos
                         let rect = renderRect (mx, my - (tileheight/4)) monster.size
                         let light = lighting monsterPos realPlayerPos
-                        monster.position, MappedImage (imageMapFor monster, frameFor monster runState, rect, colourFor monster runState light))
+                        monster.position, MappedImage (
+                            imageMapFor monster, 
+                            frameFor monster runState, 
+                            rect, 
+                            colourFor monster runState light))
                     
                     let playerFrame = sprintf "%s_A" <| frameFor player runState
                     let playerColour = colourFor player runState Color.White

@@ -6,15 +6,15 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="Constants.fs" />
     <Compile Include="GameCore.fs" />
-    <Compile Include="Util.fs" />
+    <Compile Include="Constants.fs" />
     <Compile Include="Model.fs" />
+    <Compile Include="Util.fs" />
+    <Compile Include="AStar.fs" />
+    <Compile Include="PathFinding.fs" />
     <Compile Include="Adjacency.fs" />
     <Compile Include="Bsp.fs" />
     <Compile Include="View.fs" />
-    <Compile Include="AStar.fs" />
-    <Compile Include="PathFinding.fs" />
     <Compile Include="Controller.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>

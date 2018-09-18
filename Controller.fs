@@ -7,10 +7,6 @@ open Constants
 open Util
 open PathFinding
 
-let getTile x y map = 
-    if x < 0 || y < 0 || x >= dungeonSize || y >= dungeonSize then None
-    else Some <| List.item (x * dungeonSize + y) map
-
 let tryGetMouseTile playerPosition runState = 
     if not <| isMousePressed (true, false) runState then None
     else
@@ -21,14 +17,6 @@ let tryGetMouseTile playerPosition runState =
             if rely < 0 then float rely / float tileheight |> floor |> int else rely / tileheight
         let x, y = playerPosition
         Some <| (x - tilex, y - tiley - 1)
-
-let isOpen map x y =
-    match getTile x y map with
-    | None -> false
-    | Some (Tile (_, _, kind, _)) ->
-        match kind with
-        | Room | Door | Corridor -> true
-        | _ -> false
    
 let getNewPlayerPath map monsters runState playerPosition =
     tryGetMouseTile playerPosition runState 
