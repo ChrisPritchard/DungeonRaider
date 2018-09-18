@@ -36,6 +36,7 @@
     <None Include="Content\Sprites\wizard.png" CopyToOutputDirectory="PreserveNewest" />
     <None Include="Content\Sprites\standard-key.csv" CopyToOutputDirectory="PreserveNewest" />
     <None Include="Content\Sprites\minotaur-key.csv" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="Content\Sprites\skeleton-key.csv" CopyToOutputDirectory="PreserveNewest" />
     <None Include="Content\Sprites\dungeon-key.csv" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
     

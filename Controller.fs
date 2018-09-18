@@ -168,8 +168,11 @@ let newLevel () =
     let map = dungeon dungeonSize leafSize roomSize minCorridorLength
     let px, py = startPos map
     let player = newRogue (px, py)
-    let monster = newMinotaur (px + 3, py + 3)
-    Playing (map, player, [monster]) |> Some
+    let monsters = [
+        newMinotaur (px + 3, py + 3)
+        newSkeleton (px + 4, py + 3)
+    ]
+    Playing (map, player, monsters) |> Some
 
 let advanceGame runState worldState =
     match worldState with

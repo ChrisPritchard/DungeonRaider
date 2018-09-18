@@ -6,6 +6,7 @@ type Tile = Tile of x:int * y:int * kind:TileKind * adjacency:byte
 and TileKind = Room | Door | Corridor | Block | StairsUp | StairsDown of int
 
 type Entity = {
+        kind: EntityKind
         state: EntityState
         facing: Facing
         position: int * int
@@ -15,6 +16,7 @@ type Entity = {
         timeBetweenTiles: float
         size: int * int
     }
+and EntityKind = Rogue | Minotaur | Skeleton
 and EntityState =
     | Standing of startTime:float 
     | Gesturing of startTime:float 
@@ -31,6 +33,7 @@ type GameModel =
 
 let newRogue position =
     { 
+        kind = Rogue
         state = Standing 0.
         facing = Left
         position = position
@@ -42,6 +45,7 @@ let newRogue position =
 
 let newMinotaur position =
     {
+        kind = Minotaur
         state = Standing 0.
         facing = Left
         position = position
@@ -49,4 +53,16 @@ let newMinotaur position =
         health = 5
         events = []
         size = playerwidth * 3/2, playerheight * 3/2
+    }
+
+let newSkeleton position =
+    {
+        kind = Skeleton
+        state = Standing 0.
+        facing = Left
+        position = position
+        timeBetweenTiles = 350.
+        health = 2
+        events = []
+        size = playerwidth, playerheight
     }

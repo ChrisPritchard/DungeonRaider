@@ -18,6 +18,7 @@ let assetsToLoad = [
     TextureMap ("warrior", "./Content/Sprites/warrior.png", "./Content/Sprites/standard-key.csv")
     TextureMap ("wizard", "./Content/Sprites/wizard.png", "./Content/Sprites/standard-key.csv")
     TextureMap ("minotaur", "./Content/Sprites/minotaur.png", "./Content/Sprites/minotaur-key.csv")
+    TextureMap ("skeleton", "./Content/Sprites/skeleton.png", "./Content/Sprites/skeleton-key.csv")
 ]
 
 let keyForAdjacency (adjacency : byte) kind index =
@@ -113,6 +114,12 @@ let tiles player runState map =
         | other -> 
             MappedImage ("dungeon", sprintf "floor_%s" (keyForAdjacency adjacency other i), normalHeight, Color.White))
 
+let imageMapFor entity = 
+    match entity.kind with
+    | Rogue -> "rogue"
+    | Minotaur -> "minotaur"
+    | Skeleton -> "skeleton"
+
 let frameFor entity runState = 
     let frameFor start = (((runState.elapsed - start) % (10. * frameSpeed)) / frameSpeed) + 1. |> floor |> int
     let facing = match entity.facing with Left -> "left" | _ -> "right"
@@ -144,13 +151,11 @@ let getView runState worldState =
                         let monsterPos = currentWorldPos runState monster
                         let mx, my = relativeTo player runState monsterPos
                         let rect = renderRect (mx, my - (tileheight/4)) monster.size
-                        let monsterFrame = frameFor monster runState
-                        let monsterColour = colourFor monster runState
-                        monster.position, MappedImage ("minotaur", monsterFrame, rect, monsterColour))
+                        monster.position, MappedImage (imageMapFor monster, frameFor monster runState, rect, colourFor monster runState))
                     
                     let playerFrame = sprintf "%s_A" <| frameFor player runState
                     let playerColour = colourFor player runState
-                    yield player.position, MappedImage ("rogue", playerFrame, playerRenderRect, playerColour)
+                    yield player.position, MappedImage (imageMapFor player, playerFrame, playerRenderRect, playerColour)
                 ] |> Seq.sortBy (fun ((x, y), _) -> y, x) |> Seq.map (fun (_, image) -> image)
             
             let mx, my = runState.mouse.position
