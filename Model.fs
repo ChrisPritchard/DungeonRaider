@@ -1,5 +1,7 @@
 module Model
 
+open Constants
+
 type Tile = Tile of x:int * y:int * kind:TileKind * adjacency:byte
 and TileKind = Room | Door | Corridor | Block | StairsUp | StairsDown of int
 
@@ -7,9 +9,11 @@ type Entity = {
         state: EntityState
         facing: Facing
         position: int * int
-        timeBetweenTiles: float
         health: int
         events: EntityEvent list
+
+        timeBetweenTiles: float
+        size: int * int
     }
 and EntityState =
     | Standing of startTime:float 
@@ -30,9 +34,10 @@ let newRogue position =
         state = Standing 0.
         facing = Left
         position = position
-        timeBetweenTiles = 250.
         health = 10
         events = [] 
+        timeBetweenTiles = 250.
+        size = playerwidth, playerheight
     }
 
 let newMinotaur position =
@@ -43,4 +48,5 @@ let newMinotaur position =
         timeBetweenTiles = 350.
         health = 5
         events = []
+        size = playerwidth * 3/2, playerheight * 3/2
     }
