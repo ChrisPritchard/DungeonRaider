@@ -4,6 +4,7 @@ open GameCore
 open Model
 open Bsp
 open Constants
+open Util
 
 let getTile x y map = 
     if x < 0 || y < 0 || x >= dungeonSize || y >= dungeonSize then None
@@ -54,8 +55,7 @@ let astarConfig map entities goal : AStar.Config<int * int> =
         |> Seq.filter (fun (nx, ny) -> isClear nx ny)
     let gScore (x1, y1) (x2, y2) = 
         if (abs (x2 - x1) + abs (y2 - y1)) = 2 then 1.4 else 1.
-    let fScore (x, y) (gx, gy) = 
-        sqrt ((float gx - float x)**2. + (float gy - float y)**2.)
+    let fScore = distanceBetween
     { neighbours = neighbours; gCost = gScore; fCost = fScore }
    
 let getNewPlayerPath map monsters runState playerPosition =
@@ -71,10 +71,10 @@ let seekOutPlayer map monsters player _ monsterPosition =
     if player.health = 0 then None
     else
         let otherMonsters = monsters |> Seq.filter (fun m -> m.position <> monsterPosition)
-        let config = astarConfig map otherMonsters monsterPosition
-        if config.fCost monsterPosition player.position > monsterSightRange then None
+        if distanceBetween monsterPosition player.position > monsterSightRange then None
         else
-            AStar.search monsterPosition player.position config 
+            AStar.search monsterPosition player.position 
+                <| astarConfig map otherMonsters monsterPosition 
             |> Option.bind (Seq.rev >> Seq.skip 1 >> Seq.toList >> Some)
 
 let advanceEntity runState enemies pathFinder entity =
@@ -169,7 +169,7 @@ let newLevel () =
     let px, py = startPos map
     let player = newRogue (px, py)
     let monsters = [
-        newMinotaur (px + 3, py + 3)
+        newMinotaur (px + 3, py + 4)
         newSkeleton (px + 4, py + 3)
     ]
     Playing (map, player, monsters) |> Some

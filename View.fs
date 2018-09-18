@@ -3,6 +3,7 @@ module View
 open GameCore
 open Constants
 open Model
+open Util
 open Microsoft.Xna.Framework
 
 let resolution = Windowed (screenWidth, screenHeight)
@@ -71,8 +72,7 @@ let currentWorldPos runState entity =
         wx + int (float dx * distance), wy + int (float dy * distance)
     | _ -> wx, wy
 
-let relativeTo entity runState (wx, wy) =
-    let rx, ry = entity |> currentWorldPos runState
+let relativeTo (rx, ry) (wx, wy) =
     let diffx, diffy = rx - wx, ry - wy
     originx - diffx, originy - diffy
 
@@ -90,29 +90,36 @@ let renderRect (wx, wy) (width, height) =
 
 let playerRenderRect = midx - playerwidth/2, midy - playerheight/2, playerwidth, playerheight
 
-let tiles player runState map = 
+let lighting position playerRealPosition = 
+        let distance = distanceBetween position playerRealPosition
+        if distance > lightRadius then Color.Black
+        else (1. - (distance / lightRadius)) * 255. |> int |> fun i -> new Color (i, i, i)
+
+let tiles realPlayerPos map = 
     map 
     |> List.mapi (fun i (Tile (x, y, kind, adjacency)) -> 
-        let rx, ry = (x, y) |> worldPos |> relativeTo player runState
-        i, kind, adjacency, rx, ry)
-    |> List.filter (fun (_, _, _, rx, ry) -> 
-        isVisible (rx, ry, tilewidth, tileheight * 2))
-    |> List.map (fun (i, kind, adjacency, rx, ry) -> 
-        let normalHeight = renderRect (rx, ry) (tilewidth, tileheight)
-        let doubleHeight = renderRect (rx, ry) (tilewidth, tileheight * 2)
+        let rx, ry = (x, y) |> worldPos
+        let relx, rely = (rx, ry) |> relativeTo realPlayerPos
+        i, kind, adjacency, relx, rely, rx, ry)
+    |> List.filter (fun (_, _, _, relx, rely, _, _) -> 
+        isVisible (relx, rely, tilewidth, tileheight * 2))
+    |> List.map (fun (i, kind, adjacency, relx, rely, rx, ry) -> 
+        let normalHeight = renderRect (relx, rely) (tilewidth, tileheight)
+        let doubleHeight = renderRect (relx, rely) (tilewidth, tileheight * 2)
+        let light = lighting (rx, ry) realPlayerPos
         match kind with
         | Block -> 
             match wallFor adjacency i with
             | Some wall -> 
-                MappedImage ("dungeon", wall, doubleHeight, Color.White)
+                MappedImage ("dungeon", wall, doubleHeight, light)
             | _ ->
-                MappedImage ("dungeon", sprintf "ceiling_%s" (keyForAdjacency adjacency Block i), normalHeight, Color.White)
+                MappedImage ("dungeon", sprintf "ceiling_%s" (keyForAdjacency adjacency Block i), normalHeight, light)
         | StairsUp ->
-            MappedImage ("dungeon", "wall_stairsup", doubleHeight, Color.White)
+            MappedImage ("dungeon", "wall_stairsup", doubleHeight, light)
         | StairsDown index ->
-            MappedImage ("dungeon", sprintf "stairsdown_%i" (index + 1), normalHeight, Color.White)
+            MappedImage ("dungeon", sprintf "stairsdown_%i" (index + 1), normalHeight, light)
         | other -> 
-            MappedImage ("dungeon", sprintf "floor_%s" (keyForAdjacency adjacency other i), normalHeight, Color.White))
+            MappedImage ("dungeon", sprintf "floor_%s" (keyForAdjacency adjacency other i), normalHeight, light))
 
 let imageMapFor entity = 
     match entity.kind with
@@ -131,30 +138,32 @@ let frameFor entity runState =
     | Dying start -> sprintf "die%s%i" facing <| frameFor start
     | Dead -> sprintf "die%s10" facing
 
-let colourFor entity runState =
+let colourFor entity runState defaultColour =
     match entity.state with
     | Hit _ ->
         Color.Red
     | Dying startTime when runState.elapsed - startTime < hitTime -> 
         Color.Red
-    | _ -> Color.White
+    | _ -> defaultColour
 
 let getView runState worldState =
     match worldState with
     | Playing (map, player, monsters) ->
         [
-            yield! tiles player runState map
+            let realPlayerPos = player |> currentWorldPos runState
+            yield! tiles realPlayerPos map
 
             yield!
                 [
                     yield! monsters |> List.map (fun monster -> 
                         let monsterPos = currentWorldPos runState monster
-                        let mx, my = relativeTo player runState monsterPos
+                        let mx, my = relativeTo realPlayerPos monsterPos
                         let rect = renderRect (mx, my - (tileheight/4)) monster.size
-                        monster.position, MappedImage (imageMapFor monster, frameFor monster runState, rect, colourFor monster runState))
+                        let light = lighting monsterPos realPlayerPos
+                        monster.position, MappedImage (imageMapFor monster, frameFor monster runState, rect, colourFor monster runState light))
                     
                     let playerFrame = sprintf "%s_A" <| frameFor player runState
-                    let playerColour = colourFor player runState
+                    let playerColour = colourFor player runState Color.White
                     yield player.position, MappedImage (imageMapFor player, playerFrame, playerRenderRect, playerColour)
                 ] |> Seq.sortBy (fun ((x, y), _) -> y, x) |> Seq.map (fun (_, image) -> image)
             

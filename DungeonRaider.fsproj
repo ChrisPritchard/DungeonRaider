@@ -8,6 +8,7 @@
   <ItemGroup>
     <Compile Include="Constants.fs" />
     <Compile Include="GameCore.fs" />
+    <Compile Include="Util.fs" />
     <Compile Include="Model.fs" />
     <Compile Include="Adjacency.fs" />
     <Compile Include="Bsp.fs" />

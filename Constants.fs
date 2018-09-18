@@ -21,3 +21,4 @@ let animationTime = frameSpeed * 10.
 let hitTime = frameSpeed * 3.
 
 let monsterSightRange = 4.5
+let lightRadius = 10. * float tilewidth
