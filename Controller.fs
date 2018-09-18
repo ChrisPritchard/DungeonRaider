@@ -5,6 +5,7 @@ open Model
 open Bsp
 open Constants
 open Util
+open PathFinding
 
 let getTile x y map = 
     if x < 0 || y < 0 || x >= dungeonSize || y >= dungeonSize then None
@@ -21,48 +22,19 @@ let tryGetMouseTile playerPosition runState =
         let x, y = playerPosition
         Some <| (x - tilex, y - tiley - 1)
 
-let isOpen x y map =
+let isOpen map x y =
     match getTile x y map with
     | None -> false
     | Some (Tile (_, _, kind, _)) ->
         match kind with
         | Room | Door | Corridor -> true
         | _ -> false
-
-let neighbourDeltas = 
-    [-1..1] |> Seq.collect (fun dx ->
-    [-1..1] |> Seq.filter (fun dy -> dy <> dx || dy <> 0) 
-    |> Seq.map (fun ny -> dx, ny))
-    |> Seq.toList
-
-let notExists f s = Seq.exists f s |> not
-
-let astarConfig map entities goal : AStar.Config<int * int> =
-    let isClear x y = 
-        isOpen x y map 
-        && (goal = (x, y)
-        || entities 
-            |> notExists (fun m -> 
-                m.position = (x, y) 
-                || match m.state with Walking (_, next::_) -> next = (x, y) | _ -> false))
-    let neighbours (x, y) =
-        neighbourDeltas 
-        |> Seq.filter(fun (dx, dy) ->
-            if abs dx + abs dy = 2 then
-                isClear x (dy + y) && isClear (dx + x) y
-            else true)
-        |> Seq.map (fun (dx, dy) -> x + dx, y + dy)
-        |> Seq.filter (fun (nx, ny) -> isClear nx ny)
-    let gScore (x1, y1) (x2, y2) = 
-        if (abs (x2 - x1) + abs (y2 - y1)) = 2 then 1.4 else 1.
-    let fScore = distanceBetween
-    { neighbours = neighbours; gCost = gScore; fCost = fScore; maxIterations = Some 20 }
    
 let getNewPlayerPath map monsters runState playerPosition =
     tryGetMouseTile playerPosition runState 
     |> Option.bind(fun (mx, my) -> 
-        if isOpen mx my map then 
-            AStar.search playerPosition (mx, my) (astarConfig map monsters (mx, my)) 
+        if isOpen map mx my then 
+            findPath playerPosition (mx, my) monsters (isOpen map)
             |> Option.bind (Seq.rev >> Seq.skip 1 >> Seq.toList >> Some)
         else
             None)
@@ -73,8 +45,7 @@ let seekOutPlayer map monsters player _ monsterPosition =
         let otherMonsters = monsters |> Seq.filter (fun m -> m.position <> monsterPosition)
         if distanceBetween monsterPosition player.position > monsterSightRange then None
         else
-            AStar.search monsterPosition player.position 
-                <| astarConfig map otherMonsters monsterPosition 
+            findPath monsterPosition player.position otherMonsters (isOpen map)
             |> Option.bind (Seq.rev >> Seq.skip 1 >> Seq.toList >> Some)
 
 let advanceEntity runState enemies pathFinder entity =

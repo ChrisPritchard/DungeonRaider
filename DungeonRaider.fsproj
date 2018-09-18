@@ -14,6 +14,7 @@
     <Compile Include="Bsp.fs" />
     <Compile Include="View.fs" />
     <Compile Include="AStar.fs" />
+    <Compile Include="PathFinding.fs" />
     <Compile Include="Controller.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
