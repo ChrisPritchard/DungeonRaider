@@ -1,3 +1,6 @@
+/// <summary>
+/// Sourced from my repo here: https://github.com/ChrisPritchard/astar-search
+/// </summary>
 module AStar
 
 type Config<'a> = 
