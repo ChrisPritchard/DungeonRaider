@@ -116,9 +116,14 @@ let advanceMonster map monsters player runState monster =
         |> updateEntityFacing 
 
 let advancePlaying runState map player monsters = 
-    let livingMonsters = List.filter (fun m -> m.health > 0) monsters
-    let newPlayer = advancePlayer map livingMonsters runState player
-    let newMonsters = monsters |> List.map (advanceMonster map livingMonsters newPlayer runState >> applyHits [newPlayer] runState)
+    let nearEnemies = List.filter (fun m -> 
+        m.health > 0 && isVisible <| renderRect (currentWorldPos runState m) m.size) monsters
+    let newPlayer = advancePlayer map nearEnemies runState player
+    let newMonsters = monsters |> List.map (fun m ->
+        if isVisible <| renderRect (currentWorldPos runState m) m.size then
+            m |> advanceMonster map nearEnemies newPlayer runState |> applyHits [newPlayer] runState
+        else
+            m)
     let finalPlayer = newPlayer |> applyHits newMonsters runState
     Playing (map, finalPlayer, newMonsters) |> Some
 

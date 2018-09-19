@@ -57,36 +57,9 @@ let wallFor adjacency index =
 
 let originx, originy = midx, midy + playerheight*2/3
 
-let worldPos (tx, ty) = tx * tilewidth, ty * tileheight
-
-let currentWorldPos runState entity = 
-    let wx, wy = entity.position |> worldPos
-    match entity.state with
-    | Walking (startTime, path) ->
-        let timeBetweenTiles = entity.timeBetweenTiles
-        let moveTime = (runState.elapsed - startTime) % timeBetweenTiles
-        let nextPos = List.head path
-        let distance = moveTime / timeBetweenTiles
-        let nx, ny = nextPos |> worldPos
-        let dx, dy = nx - wx, ny - wy
-        wx + int (float dx * distance), wy + int (float dy * distance)
-    | _ -> wx, wy
-
 let relativeTo (rx, ry) (wx, wy) =
     let diffx, diffy = rx - wx, ry - wy
     originx - diffx, originy - diffy
-
-let isVisible (x, y, width, height) =
-    x + width/2 > 0 
-    && x - width/2 < screenWidth 
-    && y > 0 
-    && y - height < screenHeight
-
-let renderRect (wx, wy) (width, height) = 
-    if showGrid then
-        wx - width / 2 + 1, wy - height + 1, width - 2, height - 2
-    else
-        wx - width / 2, wy - height, width, height
 
 let playerRenderRect = midx - playerwidth/2, midy - playerheight/2, playerwidth, playerheight
 
