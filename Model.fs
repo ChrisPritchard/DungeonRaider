@@ -15,6 +15,7 @@ type Entity = {
 
         timeBetweenTiles: float
         size: int * int
+        origin: int * int
     }
 and EntityKind = Rogue | Minotaur | Skeleton
 and EntityState =
@@ -41,6 +42,7 @@ let newRogue position =
         events = [] 
         timeBetweenTiles = 250.
         size = playerwidth, playerheight
+        origin = position
     }
 
 let newMinotaur position =
@@ -53,6 +55,7 @@ let newMinotaur position =
         health = 5
         events = []
         size = playerwidth * 3/2, playerheight * 3/2
+        origin = position
     }
 
 let newSkeleton position =
@@ -65,4 +68,5 @@ let newSkeleton position =
         health = 2
         events = []
         size = playerwidth, playerheight
+        origin = position
     }

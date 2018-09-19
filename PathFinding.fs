@@ -13,7 +13,7 @@ let private neighbourDeltas =
 
 let private notExists f s = Seq.exists f s |> not
 
-let private astarConfig isOpen entities goal : AStar.Config<int * int> =
+let private astarConfig isOpen entities goal limit : AStar.Config<int * int> =
     let isClear x y = 
         isOpen x y 
         && (goal = (x, y)
@@ -32,7 +32,8 @@ let private astarConfig isOpen entities goal : AStar.Config<int * int> =
     let gScore (x1, y1) (x2, y2) = 
         if (abs (x2 - x1) + abs (y2 - y1)) = 2 then 1.4 else 1.
     let fScore = distanceBetween
-    { neighbours = neighbours; gCost = gScore; fCost = fScore; maxIterations = Some 20 }
+    { neighbours = neighbours; gCost = gScore; fCost = fScore; maxIterations = limit }
 
-let findPath start goal otherEntities isOpen =
-    AStar.search start goal <| astarConfig isOpen otherEntities goal
+let findPath start goal otherEntities isOpen limit =
+    AStar.search start goal <| astarConfig isOpen otherEntities goal limit
+    |> Option.bind (Seq.rev >> Seq.skip 1 >> Seq.toList >> Some)

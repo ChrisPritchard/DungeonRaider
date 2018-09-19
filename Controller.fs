@@ -17,24 +17,6 @@ let tryGetMouseTile playerPosition runState =
             if rely < 0 then float rely / float tileheight |> floor |> int else rely / tileheight
         let x, y = playerPosition
         Some <| (x - tilex, y - tiley - 1)
-   
-let getNewPlayerPath map monsters runState playerPosition =
-    tryGetMouseTile playerPosition runState 
-    |> Option.bind(fun (mx, my) -> 
-        if isOpen map mx my then 
-            findPath playerPosition (mx, my) monsters (isOpen map)
-            |> Option.bind (Seq.rev >> Seq.skip 1 >> Seq.toList >> Some)
-        else
-            None)
-
-let seekOutPlayer map monsters player _ monsterPosition =
-    if player.health = 0 then None
-    else
-        let otherMonsters = monsters |> Seq.filter (fun m -> m.position <> monsterPosition)
-        if distanceBetween monsterPosition player.position > monsterSightRange then None
-        else
-            findPath monsterPosition player.position otherMonsters (isOpen map)
-            |> Option.bind (Seq.rev >> Seq.skip 1 >> Seq.toList >> Some)
 
 let advanceEntity runState enemies pathFinder entity =
     let elapsed = runState.elapsed
@@ -97,14 +79,38 @@ let applyHits enemies runState target =
             { target with health = target.health - hits; state = Hit runState.elapsed }
         else target
 
+
+let getNewPlayerPath map monsters runState playerPosition =
+    tryGetMouseTile playerPosition runState 
+    |> Option.bind(fun (mx, my) -> 
+        if isOpen map mx my then 
+            findPath playerPosition (mx, my) monsters (isOpen map) (Some 20)
+        else
+            None)
+
+let seekOutPlayer map monsters player monsterPosition =
+    if player.health = 0 then None
+    else
+        let otherMonsters = monsters |> Seq.filter (fun m -> m.position <> monsterPosition)
+        if distanceBetween monsterPosition player.position > monsterSightRange then None
+        else
+            findPath monsterPosition player.position otherMonsters (isOpen map) (Some 10)
+
+let seekOutOrigin map monsters origin monsterPosition =
+    let otherMonsters = monsters |> Seq.filter (fun m -> m.position <> monsterPosition)
+    findPath monsterPosition origin otherMonsters (isOpen map) (Some 30)
+
 let advancePlayer map monsters runState player =
-    let pathFinder = getNewPlayerPath map monsters
+    let pathFinder = fun runState position ->
+        getNewPlayerPath map monsters runState position
     { player with events = [] } 
         |> advanceEntity runState monsters pathFinder
         |> updateEntityFacing 
 
 let advanceMonster map monsters player runState monster = 
-    let pathFinder = seekOutPlayer map monsters player
+    let pathFinder = fun _ position ->
+        seekOutPlayer map monsters player position
+        |> Option.orElse (seekOutOrigin map monsters monster.origin position)
     { monster with events = [] }
         |> advanceEntity runState [player] pathFinder
         |> updateEntityFacing 
