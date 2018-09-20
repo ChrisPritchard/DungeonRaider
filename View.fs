@@ -68,10 +68,7 @@ let lighting map (x, y) (px, py) =
         let distance = distanceBetween (x, y) (px, py)
         if distance > lightRadius then Color.Black
         else
-            let ray = castRay (px/tilewidth,py/tileheight) (x/tilewidth,y/tileheight)
-            if List.exists (fun (ox, oy) -> isOpen map ox oy |> not) ray then Color.Black
-            else
-                (1. - (distance / lightRadius)) * 255. |> int |> fun i -> new Color (i, i, i)
+            (1. - (distance / lightRadius)) * 255. |> int |> fun i -> new Color (i, i, i)
 
 let tiles realPlayerPos map = 
     map 

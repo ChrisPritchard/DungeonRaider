@@ -37,17 +37,3 @@ let private astarConfig isOpen entities goal limit : AStar.Config<int * int> =
 let findPath start goal otherEntities isOpen limit =
     AStar.search start goal <| astarConfig isOpen otherEntities goal limit
     |> Option.bind (Seq.rev >> Seq.skip 1 >> Seq.toList >> Some)
-
-let castRay (x0, y0) (x1, y1) =
-    let dx = x1 - x0
-    let dy = y1 - y0
-
-    let (result, _, _) = 
-        [x0..(if x1 < x0 then -1 else 1)..x1] |> List.fold (fun (plotted, y, D) x -> 
-            let next = (x, y)::plotted
-            let (ny, nD) = 
-                if D > 0 then y + 1, D - 2*dx else y, D + 2*dy
-            next, ny, nD
-        ) ([], y0, 2*dy - dx)
-
-    result |> List.rev
