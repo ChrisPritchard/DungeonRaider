@@ -2,7 +2,7 @@ module Constants
 
 open Microsoft.Xna.Framework.Input
 
-let screenWidth, screenHeight = 1600, 1000
+let screenWidth, screenHeight = 1000, 1000
 let quitKey = Keys.Escape
 
 let showFPS = true // NOTE: disables the ability to debug

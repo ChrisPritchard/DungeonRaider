@@ -4,7 +4,6 @@ open GameCore
 open Constants
 open Model
 open Util
-open PathFinding
 open Microsoft.Xna.Framework
 
 let resolution = Windowed (screenWidth, screenHeight)
