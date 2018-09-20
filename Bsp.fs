@@ -3,8 +3,7 @@ module Bsp
 open Model
 open Adjacency
 
-type Range = Range of kind:BspKind option * x:int * y:int * width:int * height:int
-and BspKind = Room | Door | Corridor
+type Range = Range of kind:TileKind option * x:int * y:int * width:int * height:int
 type PartitionType = Vertical | Horizontal
 type BspResult =
     | Leaf of Range
@@ -147,14 +146,9 @@ let dungeon maxSize minLeafSize minRoomSize minCorridorLength =
             | p when List.contains p stairsDown -> Tile (x, y, StairsDown (List.findIndex ((=) p) stairsDown), 0uy)
             | _ ->
                 let inRange = List.tryFind (inRange (x, y)) allOpen
-                let index = x * maxSize + y
                 let kind = 
                     match inRange with 
-                    | Some (Range ((Some kind), _, _, _, _)) -> 
-                        match kind with
-                        | Room -> TileKind.Room index
-                        | Corridor -> TileKind.Corridor index
-                        | Door -> TileKind.Door (index - 1, index + 1) 
+                    | Some (Range ((Some kind), _, _, _, _)) -> kind
                     | _ -> Block
                 Tile (x, y, kind, 0uy)))
 

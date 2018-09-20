@@ -3,7 +3,7 @@ module Model
 open Constants
 
 type Tile = Tile of x:int * y:int * kind:TileKind * adjacency:byte
-and TileKind = Room of int | Door of int * int | Corridor of int | Block | StairsUp | StairsDown of int
+and TileKind = Room | Door | Corridor | Block | StairsUp | StairsDown of int
 
 type Entity = {
         kind: EntityKind
