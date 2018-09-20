@@ -16,7 +16,7 @@ let isOpen map x y =
     | None -> false
     | Some (Tile (_, _, kind, _)) ->
         match kind with
-        | Room | Door | Corridor -> true
+        | Room _ | Door _ | Corridor _ -> true
         | _ -> false
 
 let isVisible (x, y, width, height) =
