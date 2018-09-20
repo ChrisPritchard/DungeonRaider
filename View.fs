@@ -4,6 +4,7 @@ open GameCore
 open Constants
 open Model
 open Util
+open PathFinding
 open Microsoft.Xna.Framework
 
 let resolution = Windowed (screenWidth, screenHeight)
@@ -63,11 +64,14 @@ let relativeTo (rx, ry) (wx, wy) =
 
 let playerRenderRect = midx - playerwidth/2, midy - playerheight/2, playerwidth, playerheight
 
-let lighting (x, y) (px, py) = 
+let lighting map (x, y) (px, py) = 
         let distance = distanceBetween (x, y) (px, py)
         if distance > lightRadius then Color.Black
         else
-            (1. - (distance / lightRadius)) * 255. |> int |> fun i -> new Color (i, i, i)
+            let ray = castRay (px/tilewidth,py/tileheight) (x/tilewidth,y/tileheight)
+            if List.exists (fun (ox, oy) -> isOpen map ox oy |> not) ray then Color.Black
+            else
+                (1. - (distance / lightRadius)) * 255. |> int |> fun i -> new Color (i, i, i)
 
 let tiles realPlayerPos map = 
     map 
@@ -80,7 +84,7 @@ let tiles realPlayerPos map =
     |> List.map (fun (i, kind, adjacency, world, relative) -> 
         let normalHeight = renderRect relative (tilewidth, tileheight)
         let doubleHeight = renderRect relative (tilewidth, tileheight * 2)
-        let light = lighting world realPlayerPos
+        let light = lighting map world realPlayerPos
         match kind with
         | Block -> 
             match wallFor adjacency i with
@@ -133,7 +137,7 @@ let getView runState worldState =
                         let monsterPos = currentWorldPos runState monster
                         let mx, my = relativeTo realPlayerPos monsterPos
                         let rect = renderRect (mx, my - (tileheight/4)) monster.size
-                        let light = lighting monsterPos realPlayerPos
+                        let light = lighting map monsterPos realPlayerPos
                         monster.position, MappedImage (
                             imageMapFor monster, 
                             frameFor monster runState, 
