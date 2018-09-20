@@ -26,11 +26,15 @@ let rec bspRooms minLeafSize minRoomSize (Range (_, x, y, width, height)) =
     let splitOnX () = 
         let wiggleRoom = width - minPartitionSize
         let mid = random.Next(minLeafSize, minLeafSize + wiggleRoom + 1)
-        Partition (Vertical, recBsp (None, x, y, mid, height), recBsp (None, x + mid, y, width - mid, height))
+        Partition (Vertical, 
+            recBsp (None, x, y, mid, height), 
+            recBsp (None, x + mid, y, width - mid, height))
     let splitOnY () =
         let wiggleRoom = height - minPartitionSize
         let mid = random.Next(minLeafSize, minLeafSize + wiggleRoom + 1)
-        Partition (Horizontal, recBsp (None, x, y, width, mid), recBsp (None, x, y + mid, width, height - mid))
+        Partition (Horizontal, 
+            recBsp (None, x, y, width, mid), 
+            recBsp (None, x, y + mid, width, height - mid))
 
     if width <= minPartitionSize && height <= minPartitionSize then 
         Leaf <| roomIn minRoomSize (Range (None, x, y, width, height))
