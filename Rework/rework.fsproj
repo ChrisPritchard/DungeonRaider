@@ -1,0 +1,14 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="Model.fs" />
+    <Compile Include="Adjacency.fs" />
+    <Compile Include="Bsp.fs" />
+    <Compile Include="Dungeon.fs" />
+  </ItemGroup>
+
+</Project>
