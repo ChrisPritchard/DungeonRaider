@@ -1,6 +1,6 @@
 module Util
 
-open GameCore
+open GameCore.GameModel
 open Constants
 open Model
 

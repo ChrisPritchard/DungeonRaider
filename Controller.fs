@@ -1,6 +1,6 @@
 module Controller
 
-open GameCore
+open GameCore.GameModel
 open Model
 open Bsp
 open Constants

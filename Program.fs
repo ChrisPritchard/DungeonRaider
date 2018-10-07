@@ -1,8 +1,10 @@
 ﻿
+open GameCore.GameLoop
+
 [<EntryPoint>]
 let main _ =
     use game = 
-        new GameCore.GameLoop<Model.GameModel>(
+        new GameLoop<Model.GameModel>(
             View.resolution, 
             View.assetsToLoad, 
             Controller.advanceGame, 

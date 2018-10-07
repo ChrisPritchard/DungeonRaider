@@ -1,6 +1,6 @@
 module View
 
-open GameCore
+open GameCore.GameModel
 open Constants
 open Model
 open Util
