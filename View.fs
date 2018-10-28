@@ -9,7 +9,7 @@ open Microsoft.Xna.Framework
 let resolution = Windowed (screenWidth, screenHeight)
 
 let assetsToLoad = [
-    Font ("default", "Content/Connection")
+    Font ("defaultFont", "Content/Connection")
     Texture ("pointer", "./Content/pointer.png")
     TextureMap ("dungeon", "./Content/Sprites/dungeon.png", "./Content/Sprites/dungeon-key.csv")
     TextureMap ("cleric", "./Content/Sprites/cleric.png", "./Content/Sprites/standard-key.csv")
@@ -148,6 +148,6 @@ let getView runState worldState =
             yield Image ("pointer", (mx, my, 20, 20), Color.White)
 
             if showPlayerPos then
-                yield Text ("default", sprintf "%i, %i" (mx - midx) (my - midy), (20, 20), TopLeft, 0.5, Color.White)
-            yield Text ("default", sprintf "Player Health: %i" player.health, (20, screenHeight - 40), TopLeft, 0.5, Color.White)
+                yield Text ("defaultFont", sprintf "%i, %i" (mx - midx) (my - midy), (20, 20), TopLeft, 0.5, Color.White)
+            yield Text ("defaultFont", sprintf "Player Health: %i" player.health, (20, screenHeight - 40), TopLeft, 0.5, Color.White)
         ]
