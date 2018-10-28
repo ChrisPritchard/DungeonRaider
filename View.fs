@@ -64,26 +64,16 @@ let playerRenderRect = midx - playerwidth/2, midy - playerheight/2, playerwidth,
 
 let lightRectFrom map player =
     let (px, py) = player.position
-    let finder ox oy def = 
-        Seq.tryFind (fun _ -> getTileKind ox oy map |> function | Some Block -> true | _ -> false) 
+    let range = [0..int lightRadius]
+    let finder fx fy def = 
+        Seq.tryFind (fun n -> getTileKind (fx n) (fy n) map |> function | Some Block -> true | _ -> false) 
         >> function Some n -> n | None -> def
 
-    let minX = 
-        [0..int lightRadius] 
-        |> Seq.map (fun x -> -x + px)
-        |> Seq.find (fun x -> getTileKind x py map |> function | Some Block -> true | _ -> false)
-    let maxX = 
-        [0..int lightRadius] 
-        |> Seq.map (fun x -> x + px)
-        |> Seq.find (fun x -> getTileKind x py map |> function | Some Block -> true | _ -> false)
-    let minY = 
-        [0..int lightRadius] 
-        |> Seq.map (fun y -> -y + py)
-        |> Seq.find (fun y -> getTileKind px y map |> function | Some Block -> true | _ -> false)
-    let maxY = 
-        [0..int lightRadius] 
-        |> Seq.map (fun y -> y + py)
-        |> Seq.find (fun y -> getTileKind px y map |> function | Some Block -> true | _ -> false)
+    let minX = range |> Seq.map (fun x -> -x + px) |> finder id (fun _ -> py) (px - (int lightRadius))
+    let maxX = range |> Seq.map (fun x -> x + px) |> finder id (fun _ -> py) (px + (int lightRadius))
+    let minY = range |> Seq.map (fun y -> -y + py) |> finder (fun _ -> px) id (py - (int lightRadius))
+    let maxY = range |> Seq.map (fun y -> y + py) |> finder (fun _ -> px) id (py + (int lightRadius))
+    
     minX * tilewidth, minY * tileheight, maxX * tilewidth, maxY * tileheight
 
 let lighting (minX, minY, maxX, maxY) (x, y) (px, py) = 
