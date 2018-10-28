@@ -119,30 +119,36 @@ let colourFor entity runState defaultColour =
         Color.Red
     | _ -> defaultColour
 
+let entities runState realPlayerPos map entityList =
+    entityList |> List.map (fun entity -> 
+        
+        let entityPos = currentWorldPos runState entity
+        let mx, my = relativeTo realPlayerPos entityPos
+        let rect = renderRect (mx, my - (tileheight/4)) entity.size
+        let light = lighting map entityPos realPlayerPos
+        
+        entity.position, MappedImage (
+            imageMapFor entity, 
+            frameFor entity runState, 
+            rect, 
+            colourFor entity runState light))
+
 let getView runState worldState =
     match worldState with
-    | Playing (map, player, monsters) ->
+    | Playing (map, player, otherEntities) ->
         [
             let realPlayerPos = player |> currentWorldPos runState
             yield! tiles realPlayerPos map
                     
             yield!
                 [
-                    yield! monsters |> List.map (fun monster -> 
-                        let monsterPos = currentWorldPos runState monster
-                        let mx, my = relativeTo realPlayerPos monsterPos
-                        let rect = renderRect (mx, my - (tileheight/4)) monster.size
-                        let light = lighting map monsterPos realPlayerPos
-                        monster.position, MappedImage (
-                            imageMapFor monster, 
-                            frameFor monster runState, 
-                            rect, 
-                            colourFor monster runState light))
+                    yield! entities runState realPlayerPos map otherEntities
                     
                     let playerFrame = sprintf "%s_A" <| frameFor player runState
                     let playerColour = colourFor player runState Color.White
                     yield player.position, MappedImage (imageMapFor player, playerFrame, playerRenderRect, playerColour)
-                ] |> Seq.sortBy (fun ((x, y), _) -> y, x) |> Seq.map (fun (_, image) -> image)
+                ] 
+                |> Seq.sortBy (fun ((x, y), _) -> y, x) |> Seq.map (fun (_, image) -> image)
             
             let mx, my = runState.mouse.position
             yield Image ("pointer", (mx, my, 20, 20), Color.White)
