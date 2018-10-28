@@ -14,10 +14,6 @@ The prototype includes:
 - Movement using Astar search
 - Primitive lighting, using a distance algoritm and shading
 
-The prototype makes use of two libraries that I wrote, <https://github.com/ChrisPritchard/fsharp-gamecore> and <https://github.com/ChrisPritchard/astar-search>. Both are on nuget (which is how they are referenced), and their code is available under unilicense. This project as a whole is available under unilicense.
-
-## Status
-
 At present, this prototype is going to be left as is. The game kind (top down action RPG) is not really what I want to make going forward, it was more of a coding experiment and a stress test of my evolving monogame wrapper (fsharp-gamecore).
 
 Possible next steps if I was to continue would be:
@@ -37,7 +33,9 @@ This project was developed using dotnet core 2.1 and VS Code. It should work on 
 
 ## License/Credit/Acknowledgements
 
-The code is all under __Unilicense__. Do with it as you will.
+The code is all under the __Unilicense__. Do with it as you will.
+
+The prototype makes use of two libraries that I wrote, <https://github.com/ChrisPritchard/fsharp-gamecore> and <https://github.com/ChrisPritchard/astar-search>. Both are on nuget (which is how they are referenced), and their code is also available under the __Unilicense__.
 
 All texture content is sourced from <http://opengameart.org>, primarily from a user called Calciumtrice: <https://opengameart.org/content/dungeon-tileset-1>.
 These textures are provided under the __Creative Commons Attribution 3.0__ license.
