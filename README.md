@@ -31,6 +31,10 @@ Possible next steps if I was to continue would be:
 
 But I probably won't do the above. If you like, consider them an exercise for the reader.
 
+## Development and Running
+
+This project was developed using dotnet core 2.1 and VS Code. It should work on all platforms supported by dotnet core. If you are not running windows however, you might run into problems when building the content pipeline (something out of my control, being a monogame thing). If you do encounter issues, please try and follow the steps [here](https://github.com/ChrisPritchard/Tetris/blob/master/README.md#supported-platforms).
+
 ## License/Credit/Acknowledgements
 
 The code is all under __Unilicense__. Do with it as you will.
@@ -39,3 +43,7 @@ All texture content is sourced from <http://opengameart.org>, primarily from a u
 These textures are provided under the __Creative Commons Attribution 3.0__ license.
 
  The font used is 'Connection', from here: <https://fontlibrary.org/en/font/connection>. This font is provided under the **SIL Open Font License**, a copy of which lies in the root of this repository.
+
+## Note on development sequence
+
+This project was developed after __DungeonRaider__ [here](https://github.com/ChrisPritchard/DungeonRaider).
