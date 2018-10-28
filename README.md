@@ -44,4 +44,4 @@ These textures are provided under the __Creative Commons Attribution 3.0__ licen
 
 ## Note on development sequence
 
-This project was developed after __DungeonRaider__ [here](https://github.com/ChrisPritchard/DungeonRaider).
+This project was developed after __MiniKnight__ [here](https://github.com/ChrisPritchard/MiniKnight).
