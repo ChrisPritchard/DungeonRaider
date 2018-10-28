@@ -62,29 +62,13 @@ let relativeTo (rx, ry) (wx, wy) =
 
 let playerRenderRect = midx - playerwidth/2, midy - playerheight/2, playerwidth, playerheight
 
-let lightRectFrom map player =
-    let (px, py) = player.position
-    let range = [0..int lightRadius]
-    let finder fx fy def = 
-        Seq.tryFind (fun n -> getTileKind (fx n) (fy n) map |> function | Some Block -> true | _ -> false) 
-        >> function Some n -> n | None -> def
-
-    let minX = range |> Seq.map (fun x -> -x + px) |> finder id (fun _ -> py) (px - (int lightRadius))
-    let maxX = range |> Seq.map (fun x -> x + px) |> finder id (fun _ -> py) (px + (int lightRadius))
-    let minY = range |> Seq.map (fun y -> -y + py) |> finder (fun _ -> px) id (py - (int lightRadius))
-    let maxY = range |> Seq.map (fun y -> y + py) |> finder (fun _ -> px) id (py + (int lightRadius))
-    
-    minX * tilewidth, minY * tileheight, maxX * tilewidth, maxY * tileheight
-
-let lighting (minX, minY, maxX, maxY) (x, y) (px, py) = 
-        if x < minX || x > maxX || y < minY || y > maxY then Color.Black
+let lighting (x, y) (px, py) = 
+        let distance = distanceBetween (x, y) (px, py)
+        if distance > lightRadius then Color.Black
         else
-            let distance = distanceBetween (x, y) (px, py)
-            if distance > lightRadius then Color.Black
-            else
-                (1. - (distance / lightRadius)) * 255. |> int |> fun i -> new Color (i, i, i)
+            (1. - (distance / lightRadius)) * 255. |> int |> fun i -> new Color (i, i, i)
 
-let tiles realPlayerPos lightRect map = 
+let tiles realPlayerPos map = 
     map 
     |> List.mapi (fun i (Tile (x, y, kind, adjacency)) -> 
         let world = (x, y) |> worldPos
@@ -95,7 +79,7 @@ let tiles realPlayerPos lightRect map =
     |> List.map (fun (i, kind, adjacency, world, relative) -> 
         let normalHeight = renderRect relative (tilewidth, tileheight)
         let doubleHeight = renderRect relative (tilewidth, tileheight * 2)
-        let light = lighting lightRect world realPlayerPos
+        let light = lighting world realPlayerPos
         match kind with
         | Block -> 
             match wallFor adjacency i with
@@ -135,13 +119,13 @@ let colourFor entity runState defaultColour =
         Color.Red
     | _ -> defaultColour
 
-let entities runState realPlayerPos lightRect entityList =
+let entities runState realPlayerPos entityList =
     entityList |> List.map (fun entity -> 
         
         let entityPos = currentWorldPos runState entity
         let mx, my = relativeTo realPlayerPos entityPos
         let rect = renderRect (mx, my - (tileheight/4)) entity.size
-        let light = lighting lightRect entityPos realPlayerPos
+        let light = lighting entityPos realPlayerPos
 
         entity.position, MappedImage (
             imageMapFor entity, 
@@ -154,13 +138,12 @@ let getView runState worldState =
     | Playing (map, player, otherEntities) ->
         [
             let realPlayerPos = player |> currentWorldPos runState
-            let lightRect = lightRectFrom map player
 
-            yield! tiles realPlayerPos lightRect map
+            yield! tiles realPlayerPos map
                     
             yield!
                 [
-                    yield! entities runState realPlayerPos lightRect otherEntities
+                    yield! entities runState realPlayerPos otherEntities
                     
                     let playerFrame = sprintf "%s_A" <| frameFor player runState
                     let playerColour = colourFor player runState Color.White

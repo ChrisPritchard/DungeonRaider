@@ -2,7 +2,7 @@ module Constants
 
 open Microsoft.Xna.Framework.Input
 
-let screenWidth, screenHeight = 1000, 1000
+let screenWidth, screenHeight = 600, 600
 let quitKey = Keys.Escape
 
 let showFPS = Some "default"
@@ -21,4 +21,4 @@ let animationTime = frameSpeed * 10.
 let hitTime = frameSpeed * 3.
 
 let monsterSightRange = 4.5
-let lightRadius = 10. * float tilewidth
+let lightRadius = 7. * float tilewidth
