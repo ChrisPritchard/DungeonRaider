@@ -1,6 +1,6 @@
 module View
 
-open GameCore
+open GameCore.GameModel
 open Constants
 open Model
 open Util
@@ -9,8 +9,7 @@ open Microsoft.Xna.Framework
 let resolution = Windowed (screenWidth, screenHeight)
 
 let assetsToLoad = [
-    Font ("default", "Content/coders_crux")
-    Texture ("white", "./Content/white.png")
+    Font ("defaultFont", "Content/Connection")
     Texture ("pointer", "./Content/pointer.png")
     TextureMap ("dungeon", "./Content/Sprites/dungeon.png", "./Content/Sprites/dungeon-key.csv")
     TextureMap ("cleric", "./Content/Sprites/cleric.png", "./Content/Sprites/standard-key.csv")
@@ -63,13 +62,39 @@ let relativeTo (rx, ry) (wx, wy) =
 
 let playerRenderRect = midx - playerwidth/2, midy - playerheight/2, playerwidth, playerheight
 
-let lighting map (x, y) (px, py) = 
-        let distance = distanceBetween (x, y) (px, py)
-        if distance > lightRadius then Color.Black
-        else
-            (1. - (distance / lightRadius)) * 255. |> int |> fun i -> new Color (i, i, i)
+let lightRectFrom map player =
+    let (px, py) = player.position
+    let finder ox oy def = 
+        Seq.tryFind (fun _ -> getTileKind ox oy map |> function | Some Block -> true | _ -> false) 
+        >> function Some n -> n | None -> def
 
-let tiles realPlayerPos map = 
+    let minX = 
+        [0..int lightRadius] 
+        |> Seq.map (fun x -> -x + px)
+        |> Seq.find (fun x -> getTileKind x py map |> function | Some Block -> true | _ -> false)
+    let maxX = 
+        [0..int lightRadius] 
+        |> Seq.map (fun x -> x + px)
+        |> Seq.find (fun x -> getTileKind x py map |> function | Some Block -> true | _ -> false)
+    let minY = 
+        [0..int lightRadius] 
+        |> Seq.map (fun y -> -y + py)
+        |> Seq.find (fun y -> getTileKind px y map |> function | Some Block -> true | _ -> false)
+    let maxY = 
+        [0..int lightRadius] 
+        |> Seq.map (fun y -> y + py)
+        |> Seq.find (fun y -> getTileKind px y map |> function | Some Block -> true | _ -> false)
+    minX * tilewidth, minY * tileheight, maxX * tilewidth, maxY * tileheight
+
+let lighting (minX, minY, maxX, maxY) (x, y) (px, py) = 
+        if x < minX || x > maxX || y < minY || y > maxY then Color.Black
+        else
+            let distance = distanceBetween (x, y) (px, py)
+            if distance > lightRadius then Color.Black
+            else
+                (1. - (distance / lightRadius)) * 255. |> int |> fun i -> new Color (i, i, i)
+
+let tiles realPlayerPos lightRect map = 
     map 
     |> List.mapi (fun i (Tile (x, y, kind, adjacency)) -> 
         let world = (x, y) |> worldPos
@@ -80,7 +105,7 @@ let tiles realPlayerPos map =
     |> List.map (fun (i, kind, adjacency, world, relative) -> 
         let normalHeight = renderRect relative (tilewidth, tileheight)
         let doubleHeight = renderRect relative (tilewidth, tileheight * 2)
-        let light = lighting map world realPlayerPos
+        let light = lighting lightRect world realPlayerPos
         match kind with
         | Block -> 
             match wallFor adjacency i with
@@ -120,35 +145,43 @@ let colourFor entity runState defaultColour =
         Color.Red
     | _ -> defaultColour
 
+let entities runState realPlayerPos lightRect entityList =
+    entityList |> List.map (fun entity -> 
+        
+        let entityPos = currentWorldPos runState entity
+        let mx, my = relativeTo realPlayerPos entityPos
+        let rect = renderRect (mx, my - (tileheight/4)) entity.size
+        let light = lighting lightRect entityPos realPlayerPos
+
+        entity.position, MappedImage (
+            imageMapFor entity, 
+            frameFor entity runState, 
+            rect, 
+            colourFor entity runState light))
+
 let getView runState worldState =
     match worldState with
-    | Playing (map, player, monsters) ->
+    | Playing (map, player, otherEntities) ->
         [
             let realPlayerPos = player |> currentWorldPos runState
-            yield! tiles realPlayerPos map
+            let lightRect = lightRectFrom map player
+
+            yield! tiles realPlayerPos lightRect map
                     
             yield!
                 [
-                    yield! monsters |> List.map (fun monster -> 
-                        let monsterPos = currentWorldPos runState monster
-                        let mx, my = relativeTo realPlayerPos monsterPos
-                        let rect = renderRect (mx, my - (tileheight/4)) monster.size
-                        let light = lighting map monsterPos realPlayerPos
-                        monster.position, MappedImage (
-                            imageMapFor monster, 
-                            frameFor monster runState, 
-                            rect, 
-                            colourFor monster runState light))
+                    yield! entities runState realPlayerPos lightRect otherEntities
                     
                     let playerFrame = sprintf "%s_A" <| frameFor player runState
                     let playerColour = colourFor player runState Color.White
                     yield player.position, MappedImage (imageMapFor player, playerFrame, playerRenderRect, playerColour)
-                ] |> Seq.sortBy (fun ((x, y), _) -> y, x) |> Seq.map (fun (_, image) -> image)
+                ] 
+                |> Seq.sortBy (fun ((x, y), _) -> y, x) |> Seq.map (fun (_, image) -> image)
             
             let mx, my = runState.mouse.position
             yield Image ("pointer", (mx, my, 20, 20), Color.White)
 
             if showPlayerPos then
-                yield Text ("default", sprintf "%i, %i" (mx - midx) (my - midy), (20, 20), TopLeft, 0.5, Color.White)
-            yield Text ("default", sprintf "Player Health: %i" player.health, (20, screenHeight - 40), TopLeft, 0.5, Color.White)
+                yield Text ("defaultFont", sprintf "%i, %i" (mx - midx) (my - midy), (20, 20), TopLeft, 0.5, Color.White)
+            yield Text ("defaultFont", sprintf "Player Health: %i" player.health, (20, screenHeight - 40), TopLeft, 0.5, Color.White)
         ]

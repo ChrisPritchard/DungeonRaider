@@ -6,7 +6,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="GameCore.fs" />
     <Compile Include="Constants.fs" />
     <Compile Include="Model.fs" />
     <Compile Include="Util.fs" />
@@ -20,7 +19,6 @@
 
   <!-- Stuff outside the content pipeline - loaded directly -->
   <ItemGroup>
-    <None Include="Content\white.png" CopyToOutputDirectory="PreserveNewest" />
     <None Include="Content\pointer.png" CopyToOutputDirectory="PreserveNewest" />
     <None Include="Content\Sprites\dungeon.png" CopyToOutputDirectory="PreserveNewest" />
     <None Include="Content\Sprites\cleric.png" CopyToOutputDirectory="PreserveNewest" />
@@ -44,13 +42,14 @@
   <!-- Processed by content pipeline on build into xnb files -->
   <ItemGroup>
     <None Include="Content\Content.mgcb" />
-    <None Include="Content\coders_crux.ttf" />
-    <None Include="Content\coders_crux.spritefont" />
+    <None Include="Content\Connection.otf" />
+    <None Include="Content\Connection.spritefont" />
     <MonoGameContentReference Include="**\*.mgcb" />
   </ItemGroup>
   
   <ItemGroup>
     <PackageReference Include="astar-search" Version="1.0.1" />
+    <PackageReference Include="fsharp-gamecore" Version="0.0.4" />
     <PackageReference Include="MonoGame.Content.Builder" Version="3.7.0.4" />
     <PackageReference Include="MonoGame.Framework.DesktopGL.Core" Version="3.7.0.7" />
     <PackageReference Include="System.Drawing.Common" Version="4.5.0" />

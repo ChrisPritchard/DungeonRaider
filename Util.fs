@@ -1,6 +1,6 @@
 module Util
 
-open GameCore
+open GameCore.GameModel
 open Constants
 open Model
 
@@ -10,6 +10,11 @@ let distanceBetween (x1, y1) (x2, y2) =
 let getTile x y map = 
     if x < 0 || y < 0 || x >= dungeonSize || y >= dungeonSize then None
     else Some <| List.item (x * dungeonSize + y) map
+
+let getTileKind x y map = 
+    match getTile x y map with
+    | Some (Tile (_, _, kind, _)) -> Some kind
+    | _ -> None
 
 let isOpen map x y =
     match getTile x y map with

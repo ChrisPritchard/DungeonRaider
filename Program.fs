@@ -1,12 +1,17 @@
-﻿
+﻿open GameCore.GameModel
+open GameCore.GameRunner
+open Microsoft.Xna.Framework
+
 [<EntryPoint>]
 let main _ =
-    use game = 
-        new GameCore.GameLoop<Model.GameModel>(
-            View.resolution, 
-            View.assetsToLoad, 
-            Controller.advanceGame, 
-            View.getView, 
-            Constants.showFPS)
-    game.Run ()
+
+    let config = {
+        clearColour = Some Color.Black
+        assetsToLoad = View.assetsToLoad
+        resolution = View.resolution
+        fpsFont = Some "defaultFont"   
+    }
+
+    runGame config Controller.advanceGame View.getView
+
     0
