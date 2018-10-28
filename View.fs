@@ -9,8 +9,7 @@ open Microsoft.Xna.Framework
 let resolution = Windowed (screenWidth, screenHeight)
 
 let assetsToLoad = [
-    Font ("default", "Content/coders_crux")
-    Texture ("white", "./Content/white.png")
+    Font ("default", "Content/Connection")
     Texture ("pointer", "./Content/pointer.png")
     TextureMap ("dungeon", "./Content/Sprites/dungeon.png", "./Content/Sprites/dungeon-key.csv")
     TextureMap ("cleric", "./Content/Sprites/cleric.png", "./Content/Sprites/standard-key.csv")

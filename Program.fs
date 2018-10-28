@@ -9,7 +9,7 @@ let main _ =
         clearColour = Some Color.Black
         assetsToLoad = View.assetsToLoad
         resolution = View.resolution
-        fpsFont = None   
+        fpsFont = Some "default"   
     }
 
     runGame config Controller.advanceGame View.getView

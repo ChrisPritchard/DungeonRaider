@@ -19,7 +19,6 @@
 
   <!-- Stuff outside the content pipeline - loaded directly -->
   <ItemGroup>
-    <None Include="Content\white.png" CopyToOutputDirectory="PreserveNewest" />
     <None Include="Content\pointer.png" CopyToOutputDirectory="PreserveNewest" />
     <None Include="Content\Sprites\dungeon.png" CopyToOutputDirectory="PreserveNewest" />
     <None Include="Content\Sprites\cleric.png" CopyToOutputDirectory="PreserveNewest" />
@@ -43,8 +42,8 @@
   <!-- Processed by content pipeline on build into xnb files -->
   <ItemGroup>
     <None Include="Content\Content.mgcb" />
-    <None Include="Content\coders_crux.ttf" />
-    <None Include="Content\coders_crux.spritefont" />
+    <None Include="Content\Connection.otf" />
+    <None Include="Content\Connection.spritefont" />
     <MonoGameContentReference Include="**\*.mgcb" />
   </ItemGroup>
   
