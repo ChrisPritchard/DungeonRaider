@@ -8,7 +8,7 @@ A top-down action RPG prototype with a procedural dungeon, written in F# and Mon
 
 The prototype includes:
 
-- Procedural generation of a dungeon using a Binary Space Paritioning algorithm
+- Procedural generation of a dungeon using a Binary Space Partitioning algorithm
 - A controllable player character, animated, with strike, being hit, walking and dying animations
 - Two mapped monster characters similar to the player, a minotaur and a skeleton. The monsters pursue the player when close.
 - Movement using Astar search
